@@ -1,0 +1,56 @@
+name: Deploy LIFF app to GitHub Pages
+
+# Publishes the web/ folder to GitHub Pages.
+# config.js is git-ignored, so it is generated here from repository variables.
+#
+# One-time setup:
+#   1. Repo Settings > Pages > Build and deployment > Source = GitHub Actions.
+#   2. Repo Settings > Secrets and variables > Actions > Variables, add:
+#        LIFF_ID, ENDPOINT_URL, STORE_ID
+#   3. Push to main (or run the workflow manually).
+#   4. Use the published URL as the LIFF Endpoint URL in LINE Developers.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; let a newer push cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate web/config.js from repository variables
+        run: |
+          cat > web/config.js <<EOF
+          window.COZENE_CONFIG = {
+            LIFF_ID: "${{ vars.LIFF_ID }}",
+            ENDPOINT_URL: "${{ vars.ENDPOINT_URL }}",
+            STORE_ID: "${{ vars.STORE_ID }}",
+          };
+          EOF
+
+      - uses: actions/configure-pages@v5
+
+      - name: Upload web/ as the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
