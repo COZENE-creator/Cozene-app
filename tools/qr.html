@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cozene — QR Generator</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 20px; }
+    label { display: block; font-size: 13px; color: #555; margin: 16px 0 4px; }
+    input { width: 100%; padding: 10px; font-size: 14px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    #qr { margin: 24px auto; display: flex; justify-content: center; }
+    .hint { font-size: 12px; color: #888; }
+    button { margin-top: 12px; padding: 8px 16px; border: none; border-radius: 6px; background: #06c755; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Cozene check-in QR</h1>
+  <p class="hint">Enter your LIFF ID. The QR encodes <code>https://liff.line.me/&lt;LIFF_ID&gt;</code>, which opens the check-in app.</p>
+
+  <label for="liffId">LIFF ID</label>
+  <input id="liffId" placeholder="1234567890-abcdEFGH" />
+
+  <label for="url">Check-in URL (auto-filled, editable)</label>
+  <input id="url" />
+
+  <div id="qr"></div>
+  <button id="download" hidden>Download PNG</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    const liffIdEl = document.getElementById("liffId");
+    const urlEl = document.getElementById("url");
+    const qrEl = document.getElementById("qr");
+    const dl = document.getElementById("download");
+    let qr;
+
+    function render() {
+      const url = urlEl.value.trim();
+      qrEl.innerHTML = "";
+      dl.hidden = true;
+      if (!url) return;
+      qr = new QRCode(qrEl, { text: url, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M });
+      dl.hidden = false;
+    }
+
+    liffIdEl.addEventListener("input", () => {
+      const id = liffIdEl.value.trim();
+      urlEl.value = id ? "https://liff.line.me/" + id : "";
+      render();
+    });
+    urlEl.addEventListener("input", render);
+
+    dl.addEventListener("click", () => {
+      const img = qrEl.querySelector("img") || qrEl.querySelector("canvas");
+      if (!img) return;
+      const src = img.tagName === "IMG" ? img.src : img.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = src;
+      a.download = "cozene-checkin-qr.png";
+      a.click();
+    });
+  </script>
+</body>
+</html>

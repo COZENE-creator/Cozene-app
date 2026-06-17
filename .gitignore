@@ -1,0 +1,7 @@
+# Local config holds the LIFF ID + endpoint — keep it out of version control.
+web/config.js
+
+# OS / editor noise
+.DS_Store
+*.log
+node_modules/
