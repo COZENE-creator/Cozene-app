@@ -169,7 +169,7 @@ table { width: 100%; border-collapse: collapse; }
 thead th {
   text-align: left; padding: 11px 16px; background: var(--surface-2);
   color: var(--text-2); font-weight: 600; font-size: 11.5px;
-  text-transform: uppercase; letter-spacing: 0.05em;
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
   border-bottom: 1px solid var(--border);
 }
 tbody td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
@@ -261,6 +261,32 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
   letter-spacing: 0.12em; margin-bottom: 4px; }
 .auth-card .logo .dot { width: 26px; height: 26px; border-radius: 8px; background: var(--brand);
   color: #04331d; display: grid; place-items: center; font-weight: 900; }
+
+/* ── Two-column detail layout ──────────────────────────────── */
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+
+/* ── LINE chat bubble (message preview) ────────────────────── */
+.chat { background: #8aabd1; border-radius: 12px; padding: 16px 14px; }
+.chat-row { display: flex; gap: 8px; align-items: flex-end; }
+.chat-av { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); flex: none;
+  display: grid; place-items: center; color: #04331d; font-weight: 800; font-size: 13px; }
+.chat-msg { background: #fff; border-radius: 4px 14px 14px 14px; padding: 10px 12px; max-width: 220px;
+  font-size: 13.5px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  white-space: pre-wrap; word-break: break-word; }
+
+/* ── Delivery summary (key/value + progress) ──────────────── */
+.kv { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: var(--text-2); font-size: 13px; }
+.kv .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+.kv .v.ok { color: var(--ok); }
+.kv .v.bad { color: var(--danger); }
+.progress { height: 8px; border-radius: 999px; background: #eef1f5; overflow: hidden; display: flex; margin: 14px 0 10px; }
+.progress .seg-ok { background: var(--ok); }
+.progress .seg-bad { background: var(--danger); }
+.legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .swatch { width: 9px; height: 9px; border-radius: 3px; }
 
 /* ── Misc ──────────────────────────────────────────────────── */
 .divider { height: 1px; background: var(--border); margin: 0; }
