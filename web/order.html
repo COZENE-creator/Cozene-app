@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cozene Order</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0; background: #f5f6f8;
+    }
+    header { background: #06c755; color: #fff; padding: 14px 16px; font-weight: 700; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 16px; }
+    .item {
+      background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .item .name { flex: 1; font-weight: 600; }
+    .item .price { color: #666; font-size: 14px; margin-right: 4px; }
+    .qty { display: flex; align-items: center; gap: 8px; }
+    .qty button {
+      width: 30px; height: 30px; border-radius: 8px; border: none; background: #eee;
+      color: #333; font-size: 18px; cursor: pointer; line-height: 1;
+    }
+    .qty span { min-width: 18px; text-align: center; }
+    .bar {
+      position: sticky; bottom: 0; background: #fff; padding: 14px 16px;
+      box-shadow: 0 -1px 8px rgba(0,0,0,0.08);
+    }
+    .bar .total { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700; }
+    .bar button {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: #06c755; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    .bar button:disabled { opacity: 0.5; }
+    .status { padding: 16px; text-align: center; }
+    .ok { color: #06c755; font-weight: 700; }
+    .err { color: #e23744; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>Cozene — Order</header>
+  <div class="wrap" id="menu"></div>
+  <div class="wrap status" id="status" hidden></div>
+  <div class="bar" id="bar" hidden>
+    <div class="total"><span>Total</span><span id="total">¥0</span></div>
+    <button id="submit">Place order</button>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="./config.js"></script>
+  <script src="./order.js"></script>
+</body>
+</html>

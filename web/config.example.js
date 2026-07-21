@@ -4,9 +4,20 @@ window.COZENE_CONFIG = {
   // From LINE Developers > your LIFF app. Format: 1234567890-abcdEFGH
   LIFF_ID: "YOUR_LIFF_ID",
 
-  // The Apps Script Web App URL (ends with /exec). See apps-script/Code.gs.
-  ENDPOINT_URL: "https://script.google.com/macros/s/XXXX/exec",
+  // Base URL of the Mother System (Next.js app). Phase 2 replaces the old
+  // Apps Script endpoint with the app's own API routes.
+  ENDPOINT_BASE: "https://your-mother-system.example.com",
 
-  // Identifies this store. Required even for a single store (multi-store ready).
+  // Check-in endpoint (Phase 1 flow, now served by the Mother System).
+  // Defaults to ENDPOINT_BASE + "/api/checkin" if left blank.
+  ENDPOINT_URL: "https://your-mother-system.example.com/api/checkin",
+
+  // In-app ordering endpoint. Defaults to ENDPOINT_BASE + "/api/order".
+  ORDER_URL: "https://your-mother-system.example.com/api/order",
+
+  // Identifies this store. Must match a `stores.slug` in the database.
   STORE_ID: "store_001",
+
+  // Optional: override the ordering menu. Amounts are minor units (whole yen).
+  // MENU: [{ name: "Coffee", amount: 400 }, { name: "Latte", amount: 500 }],
 };

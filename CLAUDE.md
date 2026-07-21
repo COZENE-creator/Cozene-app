@@ -26,6 +26,27 @@ Build incrementally. **Do not build everything at once.**
 
 ---
 
+## Status: Phase 2 in progress (Mother System + Square + push)
+
+Phase 1 is complete (LIFF check-in → `visit_logs`). Phase 2 (+ the Phase-3 Mother System
+management screen, brought forward) is implemented in `mother/` (Next.js) on **PostgreSQL**:
+
+- **DB**: `db/migrations/0001_phase2.sql` — `stores`, `users` (push-capable LINE id),
+  `user_identities`, `visits`, `orders`/`order_items`/`payments` (Square), `tags`/`user_tags`,
+  `push_campaigns`/`push_deliveries`, `webhook_events`. Google Sheets is being retired.
+- **Mother System** (`mother/`): admin console (customers, campaigns, compose, tags) +
+  API routes: `/api/checkin` (drop-in for the Apps Script `doPost`), `/api/order`,
+  `/api/webhooks/line`, `/api/webhooks/square`, `/api/push/send`. See `mother/README.md`.
+- **Confirmed for this build**: PostgreSQL now; Next.js; Messaging API + OA exist and the
+  LIFF login channel and Messaging API channel are **linked** (so the LIFF `userId` is
+  push-capable); Square sandbox; in-app ordering UI included (`web/order.html`).
+- **Deferred to Phase 3+**: scheduled sends (column exists, no cron worker), Claude
+  auto-tagging (`user_tags.source`/`confidence` ready), content-match delivery, segment rules.
+
+Full design: `~/.claude/plans/groovy-forging-peach.md`.
+
+---
+
 ## Current Focus: Phase 1 (Week 1)
 
 **Definition of Done:** Scanning a QR code adds one row to a spreadsheet containing the LINE user ID and the visit timestamp — demonstrated in a development environment.
