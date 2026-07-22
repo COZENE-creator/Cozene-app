@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listCampaigns } from "@/lib/push";
 import { datetime } from "@/lib/format";
-import { IconMegaphone, IconSend } from "../../icons";
+import { IconMegaphone, IconPlus } from "../../icons";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ export default async function CampaignsPage() {
           <p className="sub">Every LINE push you&apos;ve sent, with delivery outcomes.</p>
         </div>
         <div className="actions">
-          <Link href="/push/new" className="btn btn-primary"><IconSend /> Compose</Link>
+          <Link href="/push/new" className="btn btn-primary"><IconPlus /> New campaign</Link>
         </div>
       </div>
 
