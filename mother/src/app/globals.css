@@ -164,7 +164,9 @@ p { margin: 0; }
 .stat .n.accent { color: var(--brand-ink); }
 
 /* ── Tables ────────────────────────────────────────────────── */
-.table-card { overflow: hidden; }
+/* Scroll wide tables inside the card instead of clipping them: overflow:hidden
+   alone cut off the right-hand columns on phones with no way to reach them. */
+.table-card { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
 table { width: 100%; border-collapse: collapse; }
 thead th {
   text-align: left; padding: 11px 16px; background: var(--surface-2);
@@ -227,6 +229,35 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chip-toggle.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-ink); }
 .chip-toggle:disabled { opacity: 0.5; cursor: default; }
 
+/* ── Rating choices ────────────────────────────────────────────
+   Mirrors the guest's post-payment screen (web/rate.html) so the
+   admin preview shows the real thing, not an approximation.
+   Keep the two in sync when either changes. */
+.rate-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rate-choice {
+  border: 1.5px solid var(--border-strong); border-radius: 12px; background: var(--surface);
+  padding: 12px 6px 10px; text-align: center; line-height: 1.2;
+}
+.rate-choice .emoji { display: block; font-size: 24px; line-height: 1; }
+.rate-choice .label {
+  display: block; margin-top: 7px; font-size: 12px; font-weight: 650; color: var(--text-2);
+}
+.rate-choice.on { border-color: var(--brand); background: var(--brand-soft); }
+.rate-choice.on .label { color: var(--brand-ink); }
+
+/* ── Phone frame (preview of a guest screen) ───────────────── */
+.phone {
+  border: 8px solid #23272f; border-radius: 26px; background: #f5f6f8;
+  overflow: hidden; box-shadow: var(--shadow);
+  /* Stay phone-shaped once .two-col collapses to a single column. */
+  max-width: 320px; margin: 0 auto;
+}
+.phone .phone-bar {
+  background: var(--brand); color: #fff; font-weight: 700; font-size: 11px;
+  letter-spacing: 0.1em; padding: 7px 12px;
+}
+.phone .phone-body { padding: 12px; }
+
 /* ── Forms ─────────────────────────────────────────────────── */
 .field { margin-bottom: 16px; }
 label { display: block; font-size: 13px; font-weight: 550; color: var(--text); margin-bottom: 6px; }
@@ -255,7 +286,7 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
 /* ── Login ─────────────────────────────────────────────────── */
 .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px;
   background: radial-gradient(1200px 600px at 50% -10%, #eaf7ef 0%, var(--bg) 60%); }
-.auth-card { width: 360px; background: var(--surface); border: 1px solid var(--border);
+.auth-card { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 32px 28px; }
 .auth-card .logo { display: flex; align-items: center; gap: 10px; font-weight: 800;
   letter-spacing: 0.12em; margin-bottom: 4px; }
@@ -294,14 +325,64 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
 .pre { white-space: pre-wrap; line-height: 1.6; }
 
 /* ── Responsive ────────────────────────────────────────────── */
+
+/* Tablet / small laptop: sidebar becomes a top bar. */
 @media (max-width: 820px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar {
-    position: static; height: auto; flex-direction: row; align-items: center;
-    padding: 10px 12px; overflow-x: auto; gap: 6px;
+    position: sticky; top: 0; z-index: 20; height: auto;
+    flex-direction: row; align-items: center;
+    padding: 10px 12px; gap: 6px;
+    border-right: none; border-bottom: 1px solid var(--ink-border);
   }
   .sidebar .brand { padding: 0 12px 0 4px; }
-  .sidebar .section-label, .sidebar .spacer, .sidebar .user { display: none; }
+  .sidebar .section-label { display: none; }
+  /* nav scrolls on its own so the user block stays pinned and reachable */
+  .sidebar nav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .sidebar nav::-webkit-scrollbar { display: none; }
+  .sidebar .spacer { display: none; }
+  /* Sign out was hidden here before, leaving no way to log out on a phone. */
+  .sidebar .user {
+    border-top: none; margin-top: 0; padding: 0 0 0 8px;
+    margin-left: auto; flex: none; gap: 6px;
+  }
+  .sidebar .user .email { display: none; }
   .nav-item { padding: 8px 12px; white-space: nowrap; }
   .content { padding: 22px 18px 64px; }
+
+  /* Detail pages: side column drops below the main column. */
+  .two-col { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Phone. */
+@media (max-width: 560px) {
+  .content { padding: 18px 14px 56px; }
+  h1 { font-size: 19px; }
+
+  /* Title and its action button stack instead of fighting for the same row. */
+  .page-head { flex-direction: column; align-items: stretch; gap: 12px; }
+  .page-head .actions { flex-wrap: wrap; }
+  .page-head .actions .btn { flex: 1 1 auto; }
+
+  /* Keep columns legible and let the card scroll horizontally. */
+  table { min-width: 560px; }
+  thead th { padding: 10px 12px; }
+  tbody td { padding: 11px 12px; font-size: 13.5px; }
+
+  .stat-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .stat { padding: 13px 14px; }
+  .stat .n { font-size: 23px; }
+
+  .card.pad { padding: 16px; }
+
+  /* iOS Safari zooms the page when a focused input is under 16px. */
+  input, textarea, select { font-size: 16px; }
+
+  .form-actions { flex-wrap: wrap; }
+  .form-actions .btn { flex: 1 1 auto; }
+
+  .auth-wrap { padding: 16px; }
+  .auth-card { padding: 26px 20px; }
+
+  .chat-msg { max-width: 78%; }
 }
