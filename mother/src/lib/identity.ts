@@ -35,6 +35,20 @@ export async function upsertUserByLineId(
 }
 
 /**
+ * Read-only lookup by LINE userId. Use when a request should not create a user
+ * as a side effect (e.g. merely opening a screen).
+ */
+export function findUserByLineId(
+  storeId: string,
+  lineUserId: string
+): Promise<{ id: string } | null> {
+  return queryOne<{ id: string }>(
+    `SELECT id FROM users WHERE store_id = $1 AND line_user_id = $2`,
+    [storeId, lineUserId]
+  );
+}
+
+/**
  * Record a source identity and link it to a user (if known). Idempotent on
  * (store_id, id_source, external_ref).
  */

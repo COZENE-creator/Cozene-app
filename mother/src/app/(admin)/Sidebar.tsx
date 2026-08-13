@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { IconUsers, IconMegaphone, IconSend, IconTag } from "../icons";
+import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar } from "../icons";
 
 const NAV = [
   { href: "/customers", label: "Customers", Icon: IconUsers },
   { href: "/push", label: "Campaigns", Icon: IconMegaphone },
   { href: "/push/new", label: "Compose", Icon: IconSend },
+  { href: "/specials", label: "Weekly special", Icon: IconStar },
   { href: "/tags", label: "Tags", Icon: IconTag },
 ];
 

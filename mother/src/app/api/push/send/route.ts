@@ -2,6 +2,7 @@ import { guardApi, currentAdmin } from "@/lib/auth-server";
 import { resolveStoreForLine } from "@/lib/stores";
 import { ok, fail, readJsonBody } from "@/lib/http";
 import { sendCampaignNow } from "@/lib/push";
+import { resolveAudience, type AudienceType, type AudienceSpec } from "@/lib/queries";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,8 +10,10 @@ export const dynamic = "force-dynamic";
 type Body = {
   title?: string;
   body?: string;
-  audience_type?: "all" | "tag" | "segment";
-  audience_spec?: { tag_ids?: string[] };
+  audience_type?: AudienceType;
+  audience_spec?: AudienceSpec;
+  /** Resolve the audience and return the count without sending anything. */
+  dry_run?: boolean;
 };
 
 export async function POST(req: Request) {
@@ -27,6 +30,14 @@ export async function POST(req: Request) {
   const title = String(payload.title || "").trim();
   const body = String(payload.body || "").trim();
   const audienceType = payload.audience_type ?? "all";
+  const audienceSpec = payload.audience_spec ?? {};
+
+  // A dry run answers "who would receive this?" — no campaign row, no LINE call.
+  if (payload.dry_run) {
+    const audience = await resolveAudience(audienceType, audienceSpec);
+    return ok({ dry_run: true, recipients: audience.length });
+  }
+
   if (!title) return fail("title is required");
   if (!body) return fail("message body is required");
 
@@ -40,7 +51,7 @@ export async function POST(req: Request) {
       title,
       body,
       audienceType,
-      audienceSpec: payload.audience_spec ?? {},
+      audienceSpec,
       createdBy: currentAdmin() ?? "unknown",
     });
     return ok({ ...summary });

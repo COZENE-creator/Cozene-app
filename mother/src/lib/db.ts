@@ -27,14 +27,23 @@ async function makePglite(): Promise<Queryable> {
   const db = new PGlite(dir);
   await db.waitReady;
 
-  // Bootstrap schema + seed (idempotent: migration uses IF NOT EXISTS, seed ON CONFLICT).
+  // Bootstrap schema + seed (idempotent: migrations use IF NOT EXISTS, seed ON CONFLICT).
+  // Every migration runs in filename order, so adding 000N_*.sql is enough — no
+  // need to touch this file again.
   const root = path.join(process.cwd(), "..", "db");
-  const migration = fs
-    .readFileSync(path.join(root, "migrations", "0001_phase2.sql"), "utf8")
-    // pgcrypto isn't bundled in PGlite; gen_random_uuid() is core in PG16 anyway.
-    .replace(/CREATE EXTENSION IF NOT EXISTS pgcrypto;/g, "");
+  const dirPath = path.join(root, "migrations");
+  const files = fs
+    .readdirSync(dirPath)
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+  for (const file of files) {
+    const sql = fs
+      .readFileSync(path.join(dirPath, file), "utf8")
+      // pgcrypto isn't bundled in PGlite; gen_random_uuid() is core in PG16 anyway.
+      .replace(/CREATE EXTENSION IF NOT EXISTS pgcrypto;/g, "");
+    await db.exec(sql);
+  }
   const seed = fs.readFileSync(path.join(root, "seed.sql"), "utf8");
-  await db.exec(migration);
   await db.exec(seed);
 
   return { query: (text, params) => db.query(text, (params as unknown[]) ?? []) };

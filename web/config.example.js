@@ -15,6 +15,11 @@ window.COZENE_CONFIG = {
   // In-app ordering endpoint. Defaults to ENDPOINT_BASE + "/api/order".
   ORDER_URL: "https://your-mother-system.example.com/api/order",
 
+  // Weekly-special rating screen (rate.html). Both default to ENDPOINT_BASE +
+  // "/api/specials/current" and "/api/specials/rate" if left blank.
+  // SPECIAL_CURRENT_URL: "https://your-mother-system.example.com/api/specials/current",
+  // SPECIAL_RATE_URL: "https://your-mother-system.example.com/api/specials/rate",
+
   // Identifies this store. Must match a `stores.slug` in the database.
   STORE_ID: "store_001",
 

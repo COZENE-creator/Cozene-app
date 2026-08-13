@@ -66,3 +66,11 @@ export function IconInbox(p: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function IconStar(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5-5.8-3.05-5.8 3.05 1.1-6.5-4.7-4.6 6.5-.95z" />
+    </svg>
+  );
+}

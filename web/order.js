@@ -86,7 +86,12 @@ async function submitOrder() {
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
-    showStatus("Order placed! 🎉<br>Total " + yen(data.total), "ok");
+    // Paid → send the guest straight to the weekly-special rating screen.
+    showStatus(
+      "Order placed! 🎉<br>Total " + yen(data.total) +
+        '<br><br><a class="cta" href="rate.html">Rate this week\'s special</a>',
+      "ok"
+    );
   } catch (err) {
     showStatus("Order failed<br>" + (err && err.message ? err.message : err), "err");
   }

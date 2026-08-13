@@ -102,11 +102,28 @@ export function listTags(): Promise<TagRow[]> {
   );
 }
 
+export type AudienceType = "all" | "tag" | "segment" | "rating";
+export type AudienceSpec = { tag_ids?: string[]; special_id?: string; ratings?: string[] };
+
 /** Resolve the audience (friend users) for a campaign spec. Returns pushable users. */
 export function resolveAudience(
-  audienceType: "all" | "tag" | "segment",
-  spec: { tag_ids?: string[] }
+  audienceType: AudienceType,
+  spec: AudienceSpec
 ): Promise<{ id: string; line_user_id: string; store_id: string }[]> {
+  // Guests who rated a given weekly special a given way — the feedback loop
+  // that turns the post-payment screen into targeted follow-up.
+  if (audienceType === "rating" && spec.special_id && spec.ratings?.length) {
+    return query(
+      `SELECT DISTINCT u.id, u.line_user_id, u.store_id
+         FROM users u
+         JOIN special_ratings sr ON sr.user_id = u.id
+        WHERE u.is_friend = true AND u.line_user_id IS NOT NULL
+          AND sr.special_id = $1::uuid
+          AND sr.rating = ANY($2::text[])`,
+      [spec.special_id, spec.ratings]
+    );
+  }
+
   if (audienceType === "tag" && spec.tag_ids?.length) {
     return query(
       `SELECT DISTINCT u.id, u.line_user_id, u.store_id

@@ -7,6 +7,10 @@ Admin console + backend for Cozene. One Next.js app that:
   and in-app orders (`/api/order`).
 - **Manages** customers + tags and **sends LINE push** campaigns, recording per-recipient
   delivery results (`/api/push/send`).
+- **Collects weekly-special ratings** — after paying, the guest gets a LIFF screen with the
+  dish photo and Good / OK / Not good (`/api/specials/current`, `/api/specials/rate`).
+  The result drives follow-up push: target guests *by how they rated*, and generate the
+  message copy from the result (Compose → "By weekly special rating" → "Draft from result").
 
 Data lives in **PostgreSQL** (`../db/migrations/0001_phase2.sql`).
 
@@ -40,7 +44,9 @@ npm run dev                           # http://localhost:3000
 ```
 
 Point the LIFF client at this app: in `../web/config.js` set
-`ENDPOINT_URL = <host>/api/checkin` and `ORDER_URL = <host>/api/order`.
+`ENDPOINT_URL = <host>/api/checkin` and `ORDER_URL = <host>/api/order`. The rating screen
+(`../web/rate.html`) derives its endpoints from `ENDPOINT_BASE`, or set
+`SPECIAL_CURRENT_URL` / `SPECIAL_RATE_URL` explicitly.
 
 ## Environment variables
 

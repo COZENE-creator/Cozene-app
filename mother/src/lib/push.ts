@@ -1,13 +1,13 @@
 import { query, queryOne } from "./db";
-import { resolveAudience } from "./queries";
+import { resolveAudience, type AudienceType, type AudienceSpec } from "./queries";
 import { pushText } from "./line";
 
 export type SendInput = {
   storeId: string;
   title: string;
   body: string;
-  audienceType: "all" | "tag" | "segment";
-  audienceSpec: { tag_ids?: string[] };
+  audienceType: AudienceType;
+  audienceSpec: AudienceSpec;
   createdBy: string;
 };
 

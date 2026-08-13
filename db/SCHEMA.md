@@ -336,6 +336,41 @@ Raw inbound LINE/Square events. `UNIQUE (source, external_id)` dedups replays.
 
 ---
 
+## `specials` — the weekly special menu
+
+One dish per store per week. `UNIQUE (store_id, week_start)` means re-saving the
+same week edits it in place rather than creating a second row.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| store_id | uuid | FK stores |
+| week_start | date | Monday of the week it runs |
+| title | text | dish name shown to the guest |
+| description | text | optional blurb under the photo |
+| image_url | text | public https URL, loaded in the LINE browser |
+| status | text | `draft` / `active` / `archived` |
+
+## `special_ratings` — guest feedback
+
+Written by the post-payment screen. `UNIQUE (special_id, user_id)` keeps exactly
+one row per guest, so changing your answer overwrites instead of double-counting.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| store_id | uuid | FK stores |
+| special_id | uuid | FK specials, ON DELETE CASCADE |
+| user_id | uuid | FK users |
+| user_ref | text | LIFF userId as sent |
+| rating | text | `good` / `ok` / `bad` (CHECK constraint) |
+| comment | text | optional free text (no UI yet) |
+| order_id | uuid | the paid order that prompted it, when known |
+| source | text | `liff` / `miniapp` / `admin` |
+| rated_at | timestamptz | |
+
+---
+
 ## How data flows in
 
 | Trigger | Endpoint | Writes |
@@ -346,11 +381,15 @@ Raw inbound LINE/Square events. `UNIQUE (source, external_id)` dedups replays.
 | Square order/payment | `POST /api/webhooks/square` | `orders` / `order_items` / `payments` (auto-link via `reference_id`), `webhook_events` |
 | Admin sends push | `POST /api/push/send` | `push_campaigns` + one `push_deliveries` per recipient |
 | Admin assigns tag | `POST /api/tags/assign` | `user_tags` |
+| Guest rates the special | `POST /api/specials/rate` | `special_ratings` (+ upsert `users`, `user_identities`) |
+| Owner sets the week's dish | `POST /api/specials` | `specials` (upsert on the week) |
 
 ## Roadmap hooks already in the schema
 
 - **Phase 3 auto-tagging** — `user_tags.source='claude'` + `confidence` are ready; Claude writes
   to the same table the admin UI reads.
 - **Scheduled sends** — `push_campaigns.scheduled_at` exists; only a cron worker is missing.
+- **Rating-driven push** — `push_campaigns.audience_type='rating'` with
+  `audience_spec={special_id, ratings[]}` targets guests by how they rated a dish.
 - **Mini App migration** — `id_source='miniapp'` is already a valid identity source; swap the
   client id, nothing else changes.

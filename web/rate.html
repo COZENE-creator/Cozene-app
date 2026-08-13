@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Cozene — Rate this week's special</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+      margin: 0; background: #f5f6f8; color: #14171c;
+      /* Notch-safe on iPhone inside the LINE in-app browser. */
+      padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    header { background: #06c755; color: #fff; padding: 14px 16px; font-weight: 700; }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+    .card {
+      background: #fff; border-radius: 14px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .photo {
+      width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #e9edf1;
+    }
+    .photo-fallback {
+      width: 100%; aspect-ratio: 4 / 3; background: #e9edf1;
+      display: grid; place-items: center; color: #98a1ae; font-size: 14px;
+    }
+    .body { padding: 16px; }
+    .eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: #06a548;
+    }
+    h1 { font-size: 20px; margin: 6px 0 0; line-height: 1.35; }
+    .desc { color: #576070; font-size: 14px; margin-top: 8px; line-height: 1.6; }
+
+    .ask { font-weight: 700; margin: 22px 0 10px; text-align: center; font-size: 15px; }
+
+    .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .choice {
+      background: #fff; border: 2px solid #e3e6ec; border-radius: 14px;
+      padding: 16px 6px 13px; font: inherit; cursor: pointer; text-align: center;
+      transition: border-color .12s, background .12s, transform .06s;
+      /* Comfortable thumb target on a phone. */
+      min-height: 96px;
+    }
+    .choice:active { transform: scale(0.97); }
+    .choice .emoji { font-size: 30px; line-height: 1; display: block; }
+    .choice .label { display: block; margin-top: 8px; font-size: 13px; font-weight: 700; color: #576070; }
+    .choice.on { border-color: #06c755; background: #e7f9ef; }
+    .choice.on .label { color: #04a445; }
+    .choice:disabled { opacity: .55; cursor: default; }
+
+    .note { text-align: center; color: #8b93a1; font-size: 13px; margin-top: 16px; line-height: 1.6; }
+    .thanks {
+      text-align: center; padding: 8px 0 0; color: #04a445; font-weight: 700; font-size: 15px;
+    }
+    .state { text-align: center; padding: 48px 16px; color: #8b93a1; }
+    .state.err { color: #e23744; font-weight: 600; }
+    .retry {
+      margin-top: 14px; padding: 10px 18px; border: 1px solid #d6dae1; border-radius: 10px;
+      background: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>COZENE</header>
+
+  <div class="wrap">
+    <div id="state" class="state">Loading…</div>
+
+    <main id="main" hidden>
+      <div class="card">
+        <img id="photo" class="photo" alt="" hidden />
+        <div id="photoFallback" class="photo-fallback" hidden>No photo</div>
+        <div class="body">
+          <div class="eyebrow">This week's special</div>
+          <h1 id="title"></h1>
+          <p id="desc" class="desc" hidden></p>
+        </div>
+      </div>
+
+      <div class="ask">How was it?</div>
+      <div class="choices">
+        <button class="choice" data-rating="good"><span class="emoji">😀</span><span class="label">Good</span></button>
+        <button class="choice" data-rating="ok"><span class="emoji">😐</span><span class="label">OK</span></button>
+        <button class="choice" data-rating="bad"><span class="emoji">😕</span><span class="label">Not good</span></button>
+      </div>
+
+      <div id="thanks" class="thanks" hidden></div>
+      <p class="note">Your feedback shapes next week's menu.<br />You can change your answer any time.</p>
+    </main>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="config.js"></script>
+  <script src="rate.js"></script>
+</body>
+</html>
