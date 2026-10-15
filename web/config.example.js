@@ -20,6 +20,14 @@ window.COZENE_CONFIG = {
   // SPECIAL_CURRENT_URL: "https://your-mother-system.example.com/api/specials/current",
   // SPECIAL_RATE_URL: "https://your-mother-system.example.com/api/specials/rate",
 
+  // LINE Mini App (web/miniapp/). One Mini App serves every store; the store and
+  // table come from the QR URL (?store=<slug>&table=<no>). Falls back to LIFF_ID.
+  MINIAPP_LIFF_ID: "YOUR_MINIAPP_LIFF_ID",
+
+  // Local testing only: skip LINE login and act as this user. Requires the
+  // Mother System to run with LINE_ID_TOKEN_DEV=1. Never set in production.
+  // DEV_USER_ID: "Udev0001",
+
   // Identifies this store. Must match a `stores.slug` in the database.
   STORE_ID: "store_001",
 
