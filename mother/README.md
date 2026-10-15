@@ -62,7 +62,53 @@ Point the LIFF client at this app: in `../web/config.js` set
 | `SQUARE_ENVIRONMENT` | `sandbox` or `production` |
 | `ADMIN_EMAILS`, `ADMIN_PASSWORD` | admin login allowlist + shared password |
 | `ADMIN_SESSION_SECRET` | signs the session cookie |
-| `DEFAULT_STORE_SLUG` | store used for single-store webhook/push resolution |
+| `DEFAULT_STORE_SLUG` | store used for single-store webhook/push resolution, and the store the admin console edits |
+| `LINE_LOGIN_CHANNEL_IDS` | Mini App: channel ids allowed as ID-token `aud` (comma-separated) |
+| `MINIAPP_LIFF_ID` | Mini App LIFF id, prefills the Table QR page |
+| `CONSENT_POLICY_VERSION` | bump when the consent wording changes → guests re-consent |
+| `LINE_ID_TOKEN_DEV` | `1` = accept `dev:<userId>` tokens for local testing. **Never in production.** |
+
+## LINE Mini App (Cozene Base pilot, all partner stores)
+
+One Mini App serves every store. The QR on each table opens
+`https://miniapp.line.me/<MINIAPP_LIFF_ID>?store=<slug>&table=<no>`; the app is `../web/miniapp/`.
+
+| Guest sees | Login? | Backed by |
+|---|---|---|
+| Store intro (concept, photos, hours, access) | no | `GET /api/app/store` ← Mother **Store** page |
+| Menu (wine by the glass, food, desserts) | no | `GET /api/app/store` ← Mother **Menu** page |
+| Consent: store data use (required) + partner sharing (optional) | yes | `POST /api/app/consent` → `consents` |
+| Check-in: table (from QR), party size, timestamp | yes | `POST /api/app/checkin` → `visits` |
+| First-visit free glass, staff confirm with PIN, once per guest | yes | `POST /api/app/redeem` → `benefit_redemptions` |
+| Member card: visit count | yes | `POST /api/app/me` |
+
+**Identity.** The client sends `liff.getIDToken()`, never a bare userId; the server verifies it
+with LINE (`src/lib/line-login.ts`). All stores live under one LINE provider, so the userId is
+the same person everywhere → `guests` (cross-store) ← `users.guest_id` (per store). Nothing is
+recorded against a store until the guest agrees to store data use.
+
+**Rules.** Re-scanning within 3 h updates the same visit (no inflated visit counts). The free
+glass is available during the guest's first visit at that store (6 h window) and can be
+redeemed once (DB unique key). Wrong PINs: 5 per guest per 15 min (in-memory — move to the DB
+before running more than one instance). Push campaigns skip guests who declined data use.
+
+**LINE setup (one-time).**
+1. In the Cozene provider (the one that owns the Messaging API channel), create a **LINE MINI
+   App** channel. Endpoint URL = `<pages-url>/miniapp/`. Scopes: `openid`, `profile`.
+2. Put its channel id in `LINE_LOGIN_CHANNEL_IDS` and its LIFF id in `MINIAPP_LIFF_ID` (here) and
+   in the `MINIAPP_LIFF_ID` repo variable (GitHub Pages build).
+3. Mother → **Store**: fill the profile, set the **staff PIN**. → **Menu**: replace the
+   placeholder items. → **Table QR**: print.
+4. Unverified Mini Apps can be used by guests right away; apply for LINE verification when ready
+   (review takes weeks — start early).
+
+**Adding a store.** Insert a `stores` row (slug), its menu and a `first_visit_glass` benefit
+(see `../db/seed.sql`), and print its QRs. Same Mini App, same LIFF id. The admin console
+currently edits the `DEFAULT_STORE_SLUG` store — a store switcher is the next step for multi-store.
+
+**Local test without LINE.** Run Mother with `LINE_ID_TOKEN_DEV=1`, set `DEV_USER_ID` in
+`../web/config.js`, serve `../web` (`../scripts/dev.sh --no-tunnel`) and open
+`http://localhost:8080/miniapp/?store=cozene-base&table=1`.
 
 ## Register the webhooks
 
