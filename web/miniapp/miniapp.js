@@ -390,6 +390,7 @@
     $("pinPad").hidden = true;
     $("passDone").hidden = true;
     $("passStaff").hidden = false;
+    $("passHint").hidden = false;
     $("pass").hidden = false;
     const tick = () => ($("passClock").textContent = new Date().toLocaleTimeString("ja-JP", { hour12: false }));
     tick();
@@ -438,6 +439,7 @@
       const res = await api("/redeem", { benefit: passBenefit.key, pin });
       $("pinPad").hidden = true;
       $("passStaff").hidden = true;
+      $("passHint").hidden = true;
       $("passDoneAt").textContent = "Confirmed at " + time(res.redeemed_at);
       $("passDone").hidden = false;
       if (state.me) {

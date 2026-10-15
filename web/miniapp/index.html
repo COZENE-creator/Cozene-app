@@ -124,9 +124,11 @@
       <div id="passClock" class="pass-clock"></div>
       <div class="pass-sheen"></div>
     </div>
-    <p class="pass-hint">Show this screen to staff. The clock proves it is live.</p>
-    <button id="passStaff" class="btn-light">Staff: confirm</button>
-    <button id="passClose" class="btn-text light">Close</button>
+    <div id="passDone" class="pass-done" hidden>
+      <div class="done-mark">✓</div>
+      <div class="done-title">Enjoy your glass!</div>
+      <div id="passDoneAt" class="done-at"></div>
+    </div>
 
     <div id="pinPad" class="pin" hidden>
       <div class="pin-title">Staff PIN</div>
@@ -135,11 +137,9 @@
       <p id="pinErr" class="pin-err"></p>
     </div>
 
-    <div id="passDone" class="pass-done" hidden>
-      <div class="done-mark">✓</div>
-      <div class="done-title">Enjoy your glass!</div>
-      <div id="passDoneAt" class="done-at"></div>
-    </div>
+    <p id="passHint" class="pass-hint">Show this screen to staff. The clock proves it is live.</p>
+    <button id="passStaff" class="btn-light">Staff: confirm</button>
+    <button id="passClose" class="btn-text light">Close</button>
   </div>
 
   <div id="toast" class="toast" hidden></div>
