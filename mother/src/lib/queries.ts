@@ -66,7 +66,9 @@ export type TimelineEvent = {
 /** Unified visit/order/payment timeline for one customer. */
 export function getCustomerTimeline(id: string): Promise<TimelineEvent[]> {
   return query<TimelineEvent>(
-    `SELECT 'visit'::text AS kind, checked_in_at AS at, id_source AS detail, NULL::bigint AS amount
+    `SELECT 'visit'::text AS kind, checked_in_at AS at,
+            concat_ws(' · ', id_source, 'Table ' || table_no, party_size || ' guests') AS detail,
+            NULL::bigint AS amount
        FROM visits WHERE user_id = $1
      UNION ALL
      SELECT 'order', COALESCE(ordered_at, created_at), COALESCE(state, source), total_amount
@@ -105,6 +107,16 @@ export function listTags(): Promise<TagRow[]> {
 export type AudienceType = "all" | "tag" | "segment" | "rating";
 export type AudienceSpec = { tag_ids?: string[]; special_id?: string; ratings?: string[] };
 
+/**
+ * Guests who said no to (or withdrew) store data use in the Mini App are never
+ * messaged. Users with no consent record (pre-Mini App LIFF check-ins, OA
+ * friends who never opened the app) are unaffected.
+ */
+const NOT_DECLINED = `COALESCE((
+    SELECT c.granted FROM consents c
+     WHERE c.guest_id = u.guest_id AND c.store_id = u.store_id AND c.scope = 'store_use'
+     ORDER BY c.decided_at DESC LIMIT 1), true)`;
+
 /** Resolve the audience (friend users) for a campaign spec. Returns pushable users. */
 export function resolveAudience(
   audienceType: AudienceType,
@@ -119,7 +131,8 @@ export function resolveAudience(
          JOIN special_ratings sr ON sr.user_id = u.id
         WHERE u.is_friend = true AND u.line_user_id IS NOT NULL
           AND sr.special_id = $1::uuid
-          AND sr.rating = ANY($2::text[])`,
+          AND sr.rating = ANY($2::text[])
+          AND ${NOT_DECLINED}`,
       [spec.special_id, spec.ratings]
     );
   }
@@ -130,14 +143,55 @@ export function resolveAudience(
          FROM users u
          JOIN user_tags ut ON ut.user_id = u.id
         WHERE u.is_friend = true AND u.line_user_id IS NOT NULL
-          AND ut.tag_id = ANY($1::uuid[])`,
+          AND ut.tag_id = ANY($1::uuid[])
+          AND ${NOT_DECLINED}`,
       [spec.tag_ids]
     );
   }
   // 'all' (and 'segment' until a rule builder exists) → all pushable friends.
   return query(
-    `SELECT id, line_user_id, store_id
-       FROM users
-      WHERE is_friend = true AND line_user_id IS NOT NULL`
+    `SELECT u.id, u.line_user_id, u.store_id
+       FROM users u
+      WHERE u.is_friend = true AND u.line_user_id IS NOT NULL
+        AND ${NOT_DECLINED}`
   );
+}
+
+export type CustomerMiniApp = {
+  store_use: boolean | null;
+  partner_sharing: boolean | null;
+  consent_at: string | null;
+  policy_version: string | null;
+  benefits: { title: string; redeemed_at: string }[];
+};
+
+/** Mini App status for a customer: latest consent answers and redeemed benefits. */
+export async function getCustomerMiniApp(userId: string): Promise<CustomerMiniApp> {
+  const [consent, benefits] = await Promise.all([
+    queryOne<Omit<CustomerMiniApp, "benefits">>(
+      `SELECT
+         (SELECT granted FROM consents c WHERE c.guest_id = u.guest_id AND c.store_id = u.store_id
+             AND c.scope = 'store_use' ORDER BY decided_at DESC LIMIT 1) AS store_use,
+         (SELECT granted FROM consents c WHERE c.guest_id = u.guest_id AND c.store_id = u.store_id
+             AND c.scope = 'partner_sharing' ORDER BY decided_at DESC LIMIT 1) AS partner_sharing,
+         (SELECT max(decided_at) FROM consents c WHERE c.guest_id = u.guest_id AND c.store_id = u.store_id) AS consent_at,
+         (SELECT policy_version FROM consents c WHERE c.guest_id = u.guest_id AND c.store_id = u.store_id
+             ORDER BY decided_at DESC LIMIT 1) AS policy_version
+         FROM users u WHERE u.id = $1`,
+      [userId]
+    ),
+    query<{ title: string; redeemed_at: string }>(
+      `SELECT b.title, r.redeemed_at
+         FROM benefit_redemptions r JOIN benefits b ON b.id = r.benefit_id
+        WHERE r.user_id = $1 ORDER BY r.redeemed_at DESC`,
+      [userId]
+    ),
+  ]);
+  return {
+    store_use: consent?.store_use ?? null,
+    partner_sharing: consent?.partner_sharing ?? null,
+    consent_at: consent?.consent_at ?? null,
+    policy_version: consent?.policy_version ?? null,
+    benefits,
+  };
 }

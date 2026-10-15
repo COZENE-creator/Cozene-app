@@ -386,3 +386,24 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
 
   .chat-msg { max-width: 78%; }
 }
+
+/* ── modal (menu item editor) ─────────────────────────────── */
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(16, 24, 40, 0.4); display: grid; place-items: center; padding: 16px; }
+.modal { width: 100%; max-width: 520px; max-height: calc(100vh - 32px); overflow-y: auto; box-shadow: var(--shadow-lg); }
+
+/* ── table QR sheet ───────────────────────────────────────── */
+.qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.qr-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 14px; text-align: center; break-inside: avoid; }
+.qr-tile .qr-img { display: flex; justify-content: center; margin: 10px 0; }
+.qr-tile .qr-store { font-size: 12px; color: var(--muted); }
+.qr-tile .qr-table { font-size: 20px; font-weight: 700; }
+.qr-tile .qr-cta { font-size: 12px; color: var(--text-2); }
+
+@media print {
+  .sidebar, .no-print { display: none !important; }
+  .app-shell { display: block; }
+  .content { padding: 0; max-width: none; }
+  body { background: #fff; }
+  .qr-grid { grid-template-columns: repeat(3, 1fr); }
+  .qr-tile { border-color: #ccc; }
+}

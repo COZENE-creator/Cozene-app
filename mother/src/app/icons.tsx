@@ -74,3 +74,28 @@ export function IconStar(p: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+export function IconStore(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M3 9.5 4.5 4h15L21 9.5" />
+      <path d="M3 9.5a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+      <path d="M5 12v8h14v-8M10 20v-5h4v5" />
+    </svg>
+  );
+}
+export function IconMenu(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M6 3h12v18H6z" />
+      <path d="M9 8h6M9 12h6M9 16h4" />
+    </svg>
+  );
+}
+export function IconQr(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z" />
+      <path d="M14 14h3v3h-3zM20 14v.01M17 20h3v-3M14 20h.01" />
+    </svg>
+  );
+}

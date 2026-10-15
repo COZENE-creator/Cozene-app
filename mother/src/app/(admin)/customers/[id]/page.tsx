@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCustomer, getCustomerTimeline, getUserTagIds, listTags } from "@/lib/queries";
+import { getCustomer, getCustomerTimeline, getUserTagIds, listTags, getCustomerMiniApp } from "@/lib/queries";
 import { money, datetime } from "@/lib/format";
 import TagAssign from "./TagAssign";
 
@@ -11,10 +11,11 @@ const KIND_BADGE: Record<string, string> = { visit: "neutral", order: "warn", pa
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const customer = await getCustomer(params.id);
   if (!customer) notFound();
-  const [timeline, allTags, assigned] = await Promise.all([
+  const [timeline, allTags, assigned, miniapp] = await Promise.all([
     getCustomerTimeline(params.id),
     listTags(),
     getUserTagIds(params.id),
+    getCustomerMiniApp(params.id),
   ]);
 
   return (
@@ -31,6 +32,30 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
             {" · "}<span className="mono">{customer.line_user_id || "—"}</span>
             {" · followed "}{datetime(customer.followed_at)}
           </p>
+        </div>
+      </div>
+
+      <h2>Mini App</h2>
+      <div className="card pad">
+        <div className="kv">
+          <span className="muted">Data use (this store)</span>
+          <ConsentBadge value={miniapp.store_use} />
+        </div>
+        <div className="kv">
+          <span className="muted">Share with partner stores</span>
+          <ConsentBadge value={miniapp.partner_sharing} optional />
+        </div>
+        <div className="kv">
+          <span className="muted">Last answered</span>
+          <span>{miniapp.consent_at ? `${datetime(miniapp.consent_at)} · policy ${miniapp.policy_version}` : "—"}</span>
+        </div>
+        <div className="kv" style={{ borderBottom: 0 }}>
+          <span className="muted">Benefits used</span>
+          <span>
+            {miniapp.benefits.length === 0
+              ? "None"
+              : miniapp.benefits.map((b) => `${b.title} (${datetime(b.redeemed_at)})`).join(", ")}
+          </span>
         </div>
       </div>
 
@@ -64,4 +89,11 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
       </div>
     </>
   );
+}
+
+function ConsentBadge({ value, optional }: { value: boolean | null; optional?: boolean }) {
+  if (value === null) return <span className="badge neutral">Not asked</span>;
+  if (value) return <span className="badge ok">Agreed</span>;
+  // Declining an optional scope is normal, not a warning.
+  return <span className={`badge ${optional ? "neutral" : "danger"}`}>{optional ? "Off" : "Declined"}</span>;
 }
