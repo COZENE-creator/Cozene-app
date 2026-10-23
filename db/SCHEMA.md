@@ -371,6 +371,22 @@ one row per guest, so changing your answer overwrites instead of double-counting
 
 ---
 
+## Mini App tables (`0003_miniapp.sql`)
+
+One Cozene Mini App serves every store, under one LINE provider, so the LINE userId is the same
+person at every store.
+
+| Table | What it holds |
+|---|---|
+| `stores` (+ columns) | public profile for the Mini App home: `tagline`, `concept`, `hours`, `address`, `access`, `phone`, `map_url`, `hero_image_url`, `photos` (jsonb array), `theme_color`, and `staff_pin_hash` (scrypt) |
+| `menu_categories` | per-store sections (`wine_glass`, `food`, `dessert`, …). `UNIQUE (store_id, key)` |
+| `menu_items` | name, description, `price` (yen, NULL = ask staff), `price_note`, `image_url`, `sort_order`, `is_available` |
+| `guests` | the cross-store person, `UNIQUE line_user_id`. `users.guest_id` points here |
+| `consents` | **append-only**; latest row per (guest, store, scope) wins. `scope` = `store_use` (required) \| `partner_sharing` (optional); `policy_version` records which wording was agreed |
+| `visits` (+ columns) | `table_no`, `party_size` from the table QR check-in |
+| `benefits` | per-store offers; `first_visit_glass` with `rule='first_visit'` |
+| `benefit_redemptions` | one per guest per benefit — `UNIQUE (benefit_id, guest_id)` makes "once per guest" a DB guarantee; links the `visit_id` it was used on |
+
 ## How data flows in
 
 | Trigger | Endpoint | Writes |
@@ -383,6 +399,10 @@ one row per guest, so changing your answer overwrites instead of double-counting
 | Admin assigns tag | `POST /api/tags/assign` | `user_tags` |
 | Guest rates the special | `POST /api/specials/rate` | `special_ratings` (+ upsert `users`, `user_identities`) |
 | Owner sets the week's dish | `POST /api/specials` | `specials` (upsert on the week) |
+| Guest agrees in the Mini App | `POST /api/app/consent` | `consents` (+ upsert `guests`) |
+| Guest scans a table QR | `POST /api/app/checkin` | `visits` with table + party (dedup 3 h), `users.guest_id` |
+| Staff enter PIN on the pass | `POST /api/app/redeem` | `benefit_redemptions` |
+| Owner edits store / menu | `POST /api/admin/store`, `/api/admin/menu` | `stores`, `menu_categories`, `menu_items` |
 
 ## Roadmap hooks already in the schema
 

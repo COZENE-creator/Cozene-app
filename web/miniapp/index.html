@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Cozene</title>
+  <link rel="stylesheet" href="miniapp.css" />
+</head>
+<body>
+  <!-- Cozene LINE Mini App — one app for every partner store.
+       Opened from https://miniapp.line.me/<LIFF_ID>?store=<slug>[&table=<no>] -->
+
+  <div id="boot" class="boot"><div class="spinner"></div></div>
+  <div id="fatal" class="fatal" hidden></div>
+
+  <main id="app" hidden>
+    <!-- Home: store introduction (no login) -->
+    <section id="view-home" class="view">
+      <div id="hero" class="hero">
+        <div class="hero-text">
+          <h1 id="storeName"></h1>
+          <p id="storeTagline" class="tagline"></p>
+        </div>
+      </div>
+      <div class="pad">
+        <button id="tableCta" class="cta" hidden></button>
+        <p id="storeConcept" class="concept"></p>
+        <dl id="storeInfo" class="info"></dl>
+        <div id="storePhotos" class="photos"></div>
+      </div>
+    </section>
+
+    <!-- Menu (no login) -->
+    <section id="view-menu" class="view" hidden>
+      <nav id="menuNav" class="menu-nav"></nav>
+      <div id="menuList" class="pad"></div>
+    </section>
+
+    <!-- Member card (login + consent) -->
+    <section id="view-member" class="view" hidden>
+      <div class="pad">
+        <div id="memberState" class="state">Loading…</div>
+        <div id="memberBody" hidden>
+          <div class="member-card">
+            <div class="mc-top">
+              <span id="mcStore" class="mc-store"></span>
+              <span class="mc-label">MEMBER</span>
+            </div>
+            <div id="mcName" class="mc-name"></div>
+            <div class="mc-visits"><span id="mcCount">0</span><small id="mcCountLabel">visits</small></div>
+            <div id="mcSince" class="mc-since"></div>
+          </div>
+
+          <div id="currentVisit" class="notice" hidden></div>
+
+          <h2 class="section-title">Benefits</h2>
+          <div id="benefitList"></div>
+
+          <h2 class="section-title">Privacy</h2>
+          <label class="toggle-row">
+            <span>
+              <strong>Share with partner stores</strong>
+              <small>Let other Cozene partner restaurants recognise you and send offers.</small>
+            </span>
+            <input id="partnerToggle" type="checkbox" />
+          </label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav id="tabs" class="tabs" hidden>
+    <a href="#home" data-tab="home">Home</a>
+    <a href="#menu" data-tab="menu">Menu</a>
+    <a href="#member" data-tab="member">Member</a>
+  </nav>
+
+  <!-- Consent sheet -->
+  <div id="consentSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <h2>Before you continue</h2>
+      <p class="sheet-lead">
+        <span class="js-store-name"></span> uses your LINE ID to record your visits and orders,
+        so it can show your member card and send you messages that suit you.
+      </p>
+      <ul class="consent-points">
+        <li>We store: your LINE ID and display name, check-in time, table, party size, and orders.</li>
+        <li>We use it to: run your member card and benefits, and send you personalised LINE messages.</li>
+        <li>You can stop messages any time by blocking the official account.</li>
+      </ul>
+      <label class="check">
+        <input id="consentStore" type="checkbox" />
+        <span>I agree to <span class="js-store-name"></span> using my data as described. <em>(required)</em></span>
+      </label>
+      <label class="check">
+        <input id="consentPartner" type="checkbox" />
+        <span>Also share it with Cozene partner stores so they can recognise me and send offers. <em>(optional)</em></span>
+      </label>
+      <p class="fineprint">Policy version <span id="policyVersion"></span></p>
+      <button id="consentAgree" class="btn-primary" disabled>Agree and continue</button>
+      <button id="consentCancel" class="btn-text">Not now</button>
+    </div>
+  </div>
+
+  <!-- Check-in sheet -->
+  <div id="checkinSheet" class="sheet" hidden>
+    <div class="sheet-panel">
+      <h2>Check in — Table <span id="ciTable"></span></h2>
+      <p class="sheet-lead">How many people are in your party?</p>
+      <div id="partyGrid" class="party-grid"></div>
+      <button id="checkinGo" class="btn-primary" disabled>Check in</button>
+      <button id="checkinCancel" class="btn-text">Cancel</button>
+      <p id="checkinErr" class="err" hidden></p>
+    </div>
+  </div>
+
+  <!-- Benefit pass: shown to staff -->
+  <div id="pass" class="pass" hidden>
+    <div class="pass-card">
+      <div class="pass-store js-store-name"></div>
+      <div class="pass-eyebrow">Welcome gift</div>
+      <div id="passTitle" class="pass-title"></div>
+      <div id="passGuest" class="pass-guest"></div>
+      <div id="passClock" class="pass-clock"></div>
+      <div class="pass-sheen"></div>
+    </div>
+    <div id="passDone" class="pass-done" hidden>
+      <div class="done-mark">✓</div>
+      <div class="done-title">Enjoy your glass!</div>
+      <div id="passDoneAt" class="done-at"></div>
+    </div>
+
+    <div id="pinPad" class="pin" hidden>
+      <div class="pin-title">Staff PIN</div>
+      <div id="pinDots" class="pin-dots"></div>
+      <div id="pinKeys" class="pin-keys"></div>
+      <p id="pinErr" class="pin-err"></p>
+    </div>
+
+    <p id="passHint" class="pass-hint">Show this screen to staff. The clock proves it is live.</p>
+    <button id="passStaff" class="btn-light">Staff: confirm</button>
+    <button id="passClose" class="btn-text light">Close</button>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="../config.js"></script>
+  <script src="miniapp.js"></script>
+</body>
+</html>

@@ -6,10 +6,11 @@ name: Deploy LIFF app to GitHub Pages
 # One-time setup:
 #   1. Repo Settings > Pages > Build and deployment > Source = GitHub Actions.
 #   2. Repo Settings > Secrets and variables > Actions > Variables, add:
-#        LIFF_ID, ENDPOINT_BASE, ENDPOINT_URL, ORDER_URL, STORE_ID
+#        LIFF_ID, MINIAPP_LIFF_ID, ENDPOINT_BASE, ENDPOINT_URL, ORDER_URL, STORE_ID
 #        (ENDPOINT_URL = <mother-system>/api/checkin, ORDER_URL = <mother-system>/api/order)
 #   3. Push to main (or run the workflow manually).
-#   4. Use the published URL as the LIFF Endpoint URL in LINE Developers.
+#   4. Use the published URL as the LIFF Endpoint URL in LINE Developers
+#      (<pages-url>/miniapp/ for the Mini App channel).
 
 on:
   push:
@@ -40,6 +41,7 @@ jobs:
           cat > web/config.js <<EOF
           window.COZENE_CONFIG = {
             LIFF_ID: "${{ vars.LIFF_ID }}",
+            MINIAPP_LIFF_ID: "${{ vars.MINIAPP_LIFF_ID }}",
             ENDPOINT_BASE: "${{ vars.ENDPOINT_BASE }}",
             ENDPOINT_URL: "${{ vars.ENDPOINT_URL }}",
             ORDER_URL: "${{ vars.ORDER_URL }}",

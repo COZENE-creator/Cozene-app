@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar } from "../icons";
+import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar, IconStore, IconMenu, IconQr } from "../icons";
 
 const NAV = [
   { href: "/customers", label: "Customers", Icon: IconUsers },
@@ -10,6 +10,13 @@ const NAV = [
   { href: "/push/new", label: "Compose", Icon: IconSend },
   { href: "/specials", label: "Weekly special", Icon: IconStar },
   { href: "/tags", label: "Tags", Icon: IconTag },
+];
+
+// What guests see in the LINE Mini App.
+const MINIAPP_NAV = [
+  { href: "/store", label: "Store", Icon: IconStore },
+  { href: "/menu", label: "Menu", Icon: IconMenu },
+  { href: "/qr", label: "Table QR", Icon: IconQr },
 ];
 
 export default function Sidebar({ admin }: { admin: string }) {
@@ -35,6 +42,16 @@ export default function Sidebar({ admin }: { admin: string }) {
       <div className="section-label">Workspace</div>
       <nav>
         {NAV.map(({ href, label, Icon }) => (
+          <Link key={href} href={href} className={`nav-item ${isActive(href) ? "active" : ""}`}>
+            <Icon />
+            {label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="section-label">Mini App</div>
+      <nav>
+        {MINIAPP_NAV.map(({ href, label, Icon }) => (
           <Link key={href} href={href} className={`nav-item ${isActive(href) ? "active" : ""}`}>
             <Icon />
             {label}
