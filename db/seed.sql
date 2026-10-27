@@ -7,17 +7,22 @@ VALUES ('store_001', 'Demo Store', NULL, NULL)
 ON CONFLICT (slug) DO NOTHING;
 
 -- ─── Cozene Base — Mini App pilot ─────────────────────────────────────────
--- Profile text and menu below are PLACEHOLDERS so the Mini App renders; the
--- owner replaces them in the Mother System (Store / Menu pages).
-INSERT INTO stores (slug, name, tagline, concept, hours, access, theme_color)
+-- Profile from the store's map listing and photos (web/miniapp/img/). Hours,
+-- phone and the real menu are not set yet — the owner adds them in the Mother
+-- System (Store / Menu pages); the menu items below are PLACEHOLDERS.
+INSERT INTO stores (slug, name, tagline, concept, address, access, map_url,
+                    hero_image_url, photos, theme_color)
 VALUES (
   'cozene-base',
-  'Cozene Base',
-  'Natural wine & small plates',
-  'Placeholder concept — edit in Mother System → Store.',
-  E'Tue–Sat 17:00–24:00\nSun 15:00–22:00\nClosed Mondays',
-  'Placeholder access — edit in Mother System → Store.',
-  '#7a1f3d'
+  'COZENE BASE',
+  'Bistro · Wine · Cuisine · Good times',
+  E'A neighbourhood bistro in Yutenji for wine, cuisine and good times.\nPull up a seat at the counter under warm wood and soft light.',
+  '〒153-0052 東京都目黒区祐天寺2-11-9 KTMコーポ 1階',
+  'Yutenji, Meguro — near Yutenji Station (Tokyu Toyoko Line)',
+  'https://maps.app.goo.gl/SPUZx23rTjxnR7gv5',
+  'img/counter.jpg',
+  '["img/storefront.jpg", "img/sign.jpg"]',
+  '#c25a1e'
 )
 ON CONFLICT (slug) DO NOTHING;
 

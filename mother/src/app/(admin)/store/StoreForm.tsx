@@ -14,7 +14,7 @@ const FIELDS: { key: keyof StoreProfile; label: string; placeholder?: string; mu
   { key: "address", label: "Address" },
   { key: "map_url", label: "Map link", placeholder: "https://maps.app.goo.gl/…" },
   { key: "phone", label: "Phone", placeholder: "03-1234-5678" },
-  { key: "hero_image_url", label: "Cover photo URL", placeholder: "https://…", hint: "Public https URL. Shown at the top of the home page." },
+  { key: "hero_image_url", label: "Cover photo URL", placeholder: "https://…", hint: "Public https URL, or a photo bundled with the app (img/counter.jpg). Shown at the top of the home page." },
 ];
 
 export default function StoreForm({ store }: { store: StoreProfile }) {
@@ -59,7 +59,7 @@ export default function StoreForm({ store }: { store: StoreProfile }) {
 
       <div className="field">
         <label htmlFor="photos">Gallery photo URLs</label>
-        <textarea id="photos" value={photos} onChange={(e) => setPhotos(e.target.value)} placeholder="One https URL per line" style={{ minHeight: 90 }} />
+        <textarea id="photos" value={photos} onChange={(e) => setPhotos(e.target.value)} placeholder="One per line: https URL or img/… (bundled)" style={{ minHeight: 90 }} />
       </div>
 
       <div className="field">
