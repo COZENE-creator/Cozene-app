@@ -1,5 +1,6 @@
 import { query, queryOne } from "./db";
 import { upsertIdentity } from "./identity";
+import { checkFriendship } from "./line";
 
 /**
  * Guests — one person across every Cozene store.
@@ -95,4 +96,24 @@ export async function recordConsent(
       [guestId, storeId, scope, granted, POLICY_VERSION]
     );
   }
+}
+
+/**
+ * Refresh users.is_friend from LINE. The follow webhook only fires when someone
+ * newly adds the Official Account, so a guest who was already a friend before
+ * opening the Mini App would otherwise never become messageable.
+ */
+export async function syncFriendship(userId: string, lineUserId: string): Promise<boolean | null> {
+  const friend = await checkFriendship(lineUserId);
+  if (friend === null) return null;
+  await query(
+    `UPDATE users
+        SET is_friend     = $2,
+            followed_at   = CASE WHEN $2 AND NOT is_friend THEN now() ELSE followed_at END,
+            unfollowed_at = CASE WHEN NOT $2 AND is_friend THEN now() ELSE unfollowed_at END,
+            updated_at    = now()
+      WHERE id = $1 AND is_friend IS DISTINCT FROM $2`,
+    [userId, friend]
+  );
+  return friend;
 }
