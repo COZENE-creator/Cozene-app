@@ -21,7 +21,7 @@ VALUES (
   'Yutenji, Meguro — near Yutenji Station (Tokyu Toyoko Line)',
   'https://maps.app.goo.gl/SPUZx23rTjxnR7gv5',
   'img/counter.jpg',
-  '["img/storefront.jpg", "img/sign.jpg"]',
+  '["img/entrance.jpg", "img/interior.jpg", "img/sign-night.jpg", "img/sign.jpg"]',
   '#c25a1e'
 )
 ON CONFLICT (slug) DO NOTHING;
