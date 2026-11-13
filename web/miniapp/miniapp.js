@@ -19,6 +19,10 @@
   // Mother System with LINE_ID_TOKEN_DEV=1.
   const DEV_USER = cfg.DEV_USER_ID || "";
 
+  // ngrok's free plan shows a "you are about to visit" page to browsers; this
+  // header lets the app's own API calls through it.
+  const HEADERS = { "ngrok-skip-browser-warning": "1" };
+
   const $ = (id) => document.getElementById(id);
   const state = { store: null, slug: "", table: "", me: null, partySize: 0, pin: "" };
 
@@ -90,7 +94,7 @@
   async function api(path, body) {
     const res = await fetch(API + path, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // simple request, no preflight
+      headers: Object.assign({ "Content-Type": "text/plain;charset=utf-8" }, HEADERS),
       body: JSON.stringify(Object.assign({ store: state.slug, id_token: idToken() }, body || {})),
     });
     const data = await res.json().catch(() => ({ ok: false, error: "HTTP " + res.status }));
@@ -481,7 +485,7 @@
     if (!state.slug) return fatal("No store selected. Scan the QR code at the restaurant.");
 
     try {
-      const res = await fetch(API + "/store?store=" + encodeURIComponent(state.slug));
+      const res = await fetch(API + "/store?store=" + encodeURIComponent(state.slug), { headers: HEADERS });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "HTTP " + res.status);
       state.store = data.store;

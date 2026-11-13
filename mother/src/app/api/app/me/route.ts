@@ -1,5 +1,5 @@
 import { corsOptions, json, authGuest, type GuestBody } from "@/lib/guest-api";
-import { getConsentState, ensureStoreMember, POLICY_VERSION } from "@/lib/guests";
+import { getConsentState, ensureStoreMember, syncFriendship, POLICY_VERSION } from "@/lib/guests";
 import { getMemberSummary, getBenefits } from "@/lib/miniapp";
 
 export const runtime = "nodejs";
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   const [member, benefits] = await Promise.all([
     getMemberSummary(ctx.storeId, userId),
     getBenefits(ctx.storeId, ctx.guestId, userId),
+    syncFriendship(userId, ctx.lineUserId),
   ]);
   return json(200, { ok: true, guest, consent, policy_version: POLICY_VERSION, member, benefits });
 }

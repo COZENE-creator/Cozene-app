@@ -77,6 +77,7 @@ button { font: inherit; cursor: pointer; }
 .menu-item .desc { grid-column: 1 / -1; color: var(--text-2); font-size: 14px; }
 .menu-item img { grid-column: 1 / -1; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px; margin-top: 6px; }
 .menu-empty { color: var(--muted); padding: 12px 0; }
+.menu-foot { color: var(--muted); font-size: 13px; text-align: center; margin: 0 0 24px; }
 
 /* member */
 .member-card {

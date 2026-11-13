@@ -24,6 +24,10 @@ function usePglite(): boolean {
 async function makePglite(): Promise<Queryable> {
   const { PGlite } = await import("@electric-sql/pglite");
   const dir = process.env.PGLITE_DIR || path.join(process.cwd(), ".pglite-data");
+  // A crash can leave an empty lock file behind, and PGlite then refuses to start
+  // until it is removed. Only this process opens the directory, so it is safe to clear.
+  const lock = path.join(dir, "postmaster.pid");
+  if (fs.existsSync(lock) && fs.statSync(lock).size === 0) fs.unlinkSync(lock);
   const db = new PGlite(dir);
   await db.waitReady;
 
@@ -61,6 +65,10 @@ function makePgPool(): Queryable {
 function getDb(): Promise<Queryable> {
   if (!global.__cozeneDb) {
     global.__cozeneDb = usePglite() ? makePglite() : Promise.resolve(makePgPool());
+    // Don't keep a failed start cached forever; the next request retries.
+    global.__cozeneDb.catch(() => {
+      global.__cozeneDb = undefined;
+    });
   }
   return global.__cozeneDb;
 }

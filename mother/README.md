@@ -37,7 +37,7 @@ npm install
 cp .env.example .env.local          # fill in DB + LINE + Square + admin values
 
 # create the schema + default store
-npm run db:migrate                    # psql "$DATABASE_URL" -f ../db/migrations/0001_phase2.sql
+npm run db:migrate                    # applies every db/migrations/*.sql in order
 npm run db:seed                       # inserts the store with slug 'store_001'
 
 npm run dev                           # http://localhost:3000

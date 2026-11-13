@@ -1,5 +1,6 @@
 import { corsOptions, json, bad, authGuest, consentedMember, type GuestBody } from "@/lib/guest-api";
 import { checkIn, getMemberSummary, getBenefits } from "@/lib/miniapp";
+import { syncFriendship } from "@/lib/guests";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
   const [summary, benefits] = await Promise.all([
     getMemberSummary(ctx.storeId, member.userId),
     getBenefits(ctx.storeId, ctx.guestId, member.userId),
+    syncFriendship(member.userId, ctx.lineUserId),
   ]);
 
   return json(200, { ok: true, visit, is_new: isNew, member: summary, benefits });

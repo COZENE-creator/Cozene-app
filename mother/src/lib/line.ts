@@ -72,3 +72,22 @@ export async function getProfileDisplayName(userId: string): Promise<string | nu
     return null;
   }
 }
+
+/**
+ * Is this user currently a friend of the Official Account? The profile
+ * endpoint only answers for friends (404 otherwise). Returns null when LINE
+ * can't be asked (no token, network error), so callers leave the flag alone.
+ */
+export async function checkFriendship(userId: string): Promise<boolean | null> {
+  if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) return null;
+  try {
+    const res = await fetch(`${LINE_API}/profile/${encodeURIComponent(userId)}`, {
+      headers: { Authorization: `Bearer ${token()}` },
+    });
+    if (res.ok) return true;
+    if (res.status === 404) return false;
+    return null;
+  } catch {
+    return null;
+  }
+}

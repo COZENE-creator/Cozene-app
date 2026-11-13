@@ -9,6 +9,8 @@ type Body = Record<string, unknown>;
 
 const text = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
 const isUrl = (v: string) => /^https?:\/\/\S+$/i.test(v);
+// Photos bundled with the Mini App (web/miniapp/img/…), relative to the page.
+const isBundledImage = (v: string) => /^img\/[\w.-]+\.(jpe?g|png|webp)$/i.test(v);
 
 /** Save the store profile shown on the Mini App home page (admin). */
 export async function POST(req: Request) {
@@ -31,8 +33,10 @@ export async function POST(req: Request) {
   const photos = (Array.isArray(body.photos) ? body.photos : [])
     .map((p) => (typeof p === "string" ? p.trim() : ""))
     .filter(Boolean);
-  const urls = [text(body.map_url), text(body.hero_image_url), ...photos].filter((u): u is string => !!u);
-  const badUrl = urls.find((u) => !isUrl(u));
+  const mapUrl = text(body.map_url);
+  if (mapUrl && !isUrl(mapUrl)) return fail(`Not a URL: ${mapUrl}`);
+  const images = [text(body.hero_image_url), ...photos].filter((u): u is string => !!u);
+  const badUrl = images.find((u) => !isUrl(u) && !isBundledImage(u));
   if (badUrl) return fail(`Not a URL: ${badUrl}`);
 
   const storeId = await adminStoreId();
