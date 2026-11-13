@@ -1,0 +1,20 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env — holds DB URL + LINE/Square secrets
+.env
+.env.local
+.env*.local
+
+# local dev database (PGlite)
+.pglite-data/
+
+# misc
+*.log
+.DS_Store

@@ -26,6 +26,41 @@ Build incrementally. **Do not build everything at once.**
 
 ---
 
+## Status: Phase 2 in progress (Mother System + Square + push)
+
+Phase 1 is complete (LIFF check-in → `visit_logs`). Phase 2 (+ the Phase-3 Mother System
+management screen, brought forward) is implemented in `mother/` (Next.js) on **PostgreSQL**:
+
+- **DB**: `db/migrations/0001_phase2.sql` — `stores`, `users` (push-capable LINE id),
+  `user_identities`, `visits`, `orders`/`order_items`/`payments` (Square), `tags`/`user_tags`,
+  `push_campaigns`/`push_deliveries`, `webhook_events`. Google Sheets is being retired.
+- **Mother System** (`mother/`): admin console (customers, campaigns, compose, tags) +
+  API routes: `/api/checkin` (drop-in for the Apps Script `doPost`), `/api/order`,
+  `/api/webhooks/line`, `/api/webhooks/square`, `/api/push/send`. See `mother/README.md`.
+- **Confirmed for this build**: PostgreSQL now; Next.js; Messaging API + OA exist and the
+  LIFF login channel and Messaging API channel are **linked** (so the LIFF `userId` is
+  push-capable); Square sandbox; in-app ordering UI included (`web/order.html`).
+- **Deferred to Phase 3+**: scheduled sends (column exists, no cron worker), Claude
+  auto-tagging (`user_tags.source`/`confidence` ready), content-match delivery, segment rules.
+
+Full design: `~/.claude/plans/groovy-forging-peach.md`.
+
+### LINE Mini App — Cozene Base pilot (branch `feature/line-mini-app`)
+
+Client request: identify every guest by LINE ID, link to visits/orders, bring them back with
+personalised messages; pilot at **Cozene Base**, reusable for other independent restaurants.
+
+- **One Cozene Mini App for all stores** (decided): store + table come from the QR
+  (`?store=<slug>&table=<no>`); all stores under one provider → same userId everywhere →
+  `guests` table (cross-store) ← `users.guest_id`.
+- Guest app: `web/miniapp/` — Home + Menu (no login); consent → table check-in (party size) →
+  first-visit free glass (staff confirm with **store PIN**, once per guest) → member card (visits).
+- Server: `/api/app/*` verifies the LIFF **ID token** with LINE; never trusts a client userId.
+- Admin: Mother → Store / Menu / Table QR; consent + benefits on customer detail; push skips
+  guests who declined. Schema: `db/migrations/0003_miniapp.sql`. Setup: `mother/README.md`.
+
+---
+
 ## Current Focus: Phase 1 (Week 1)
 
 **Definition of Done:** Scanning a QR code adds one row to a spreadsheet containing the LINE user ID and the visit timestamp — demonstrated in a development environment.
@@ -54,7 +89,7 @@ Phase 1 proves the entry point (`QR check-in → visit log → DB`). Customer-ID
 
 ## Technical Guidelines
 
-- **Use LIFF, not Mini App.** Sufficient for a single-store MVP and avoids the 2–4 week review wait. The LIFF `userId` is channel-scoped, which is fine for one store. Migrate to Mini App later when cross-store support is needed.
+- ~~Use LIFF, not Mini App.~~ Superseded: the client now wants the cross-store LINE Mini App (see above). The Mini App runs on the same LIFF SDK, so `web/` code carries over; the old LIFF pages keep working.
 - **Write destination: Google Sheets.** Either an Apps Script Web App (`doPost`) or the Sheets API directly — choose whichever is lighter.
 - **Frontend: minimal** (HTML/JS or a lightweight framework). Use whatever setup the developer is comfortable with.
 
