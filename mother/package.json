@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "db:migrate": "psql \"$DATABASE_URL\" -f ../db/migrations/0001_phase2.sql",
-    "db:seed": "psql \"$DATABASE_URL\" -f ../db/seed.sql"
+    "db:migrate": "for f in ../db/migrations/*.sql; do psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f \"$f\" || exit 1; done",
+    "db:seed": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f ../db/seed.sql"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
