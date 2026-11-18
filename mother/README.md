@@ -110,6 +110,18 @@ currently edits the `DEFAULT_STORE_SLUG` store — a store switcher is the next 
 `../web/config.js`, serve `../web` (`../scripts/dev.sh --no-tunnel`) and open
 `http://localhost:8080/miniapp/?store=cozene-base&table=1`.
 
+## Backups
+
+`scripts/backup-db.sh` dumps the PostgreSQL database (`DATABASE_URL` in `.env.local`) to
+`~/backups/cozene-YYYYMMDD-HHMM.sql.gz`, keeps 14 days, and also copies each dump to S3 when
+`BACKUP_S3_URI` is set. Run it daily from cron:
+
+```
+0 4 * * * /home/ubuntu/cozene/scripts/backup-db.sh >> /home/ubuntu/backups/backup.log 2>&1
+```
+
+Restore steps are in the script header.
+
 ## Register the webhooks
 
 - **LINE**: Messaging API channel → Webhook URL = `<host>/api/webhooks/line`, enable "Use webhook".
