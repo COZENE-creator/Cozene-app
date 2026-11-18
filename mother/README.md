@@ -87,7 +87,10 @@ with LINE (`src/lib/line-login.ts`). All stores live under one LINE provider, so
 the same person everywhere → `guests` (cross-store) ← `users.guest_id` (per store). Nothing is
 recorded against a store until the guest agrees to store data use.
 
-**Languages.** Japanese is the default; guests switch to English in the tab bar (remembered per
+**Languages.** Both apps are Japanese by default with an English switch. Mother: 日本語 / EN in
+the sidebar and on the login page (cookie `cz_lang`); text sits next to where it is used as
+`tr("顧客", "Customers")` — `getTr()` (`src/lib/lang-server.ts`) in server components and route
+handlers, `useTr()` (`src/app/LangProvider.tsx`) in client components. Mini App: guests switch to English in the tab bar (remembered per
 phone). Interface text is in `../web/miniapp/miniapp.js` (`STRINGS`). Store, menu and benefit
 text: the regular columns hold Japanese, English sits in each row's `translations` jsonb
 (`../db/migrations/0004_i18n.sql`) and falls back to Japanese when missing. Mother → Store / Menu

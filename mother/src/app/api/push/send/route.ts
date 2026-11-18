@@ -2,6 +2,7 @@ import { guardApi, currentAdmin } from "@/lib/auth-server";
 import { resolveStoreForLine } from "@/lib/stores";
 import { ok, fail, readJsonBody } from "@/lib/http";
 import { sendCampaignNow } from "@/lib/push";
+import { getTr } from "@/lib/lang-server";
 import { resolveAudience, type AudienceType, type AudienceSpec } from "@/lib/queries";
 
 export const runtime = "nodejs";
@@ -19,12 +20,13 @@ type Body = {
 export async function POST(req: Request) {
   const unauth = guardApi();
   if (unauth) return unauth;
+  const tr = getTr();
 
   let payload: Body;
   try {
     payload = await readJsonBody<Body>(req);
   } catch {
-    return fail("invalid body");
+    return fail(tr("リクエストの形式が正しくありません", "invalid body"));
   }
 
   const title = String(payload.title || "").trim();
@@ -38,12 +40,12 @@ export async function POST(req: Request) {
     return ok({ dry_run: true, recipients: audience.length });
   }
 
-  if (!title) return fail("title is required");
-  if (!body) return fail("message body is required");
+  if (!title) return fail(tr("タイトルを入力してください", "title is required"));
+  if (!body) return fail(tr("メッセージを入力してください", "message body is required"));
 
   // MVP single-store: resolve the default store.
   const storeId = await resolveStoreForLine(undefined);
-  if (!storeId) return fail("No store configured", 500);
+  if (!storeId) return fail(tr("店舗が設定されていません", "No store configured"), 500);
 
   try {
     const summary = await sendCampaignNow({
@@ -56,6 +58,6 @@ export async function POST(req: Request) {
     });
     return ok({ ...summary });
   } catch (err) {
-    return fail("Send failed: " + String(err), 500);
+    return fail(tr("送信に失敗しました: ", "Send failed: ") + String(err), 500);
   }
 }

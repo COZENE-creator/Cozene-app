@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTr } from "../../LangProvider";
 
 type Existing = {
   id: string;
@@ -19,6 +20,7 @@ export default function SpecialForm({
   existing: Existing;
 }) {
   const router = useRouter();
+  const tr = useTr();
   const [title, setTitle] = useState(existing?.title ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
   const [imageUrl, setImageUrl] = useState(existing?.image_url ?? "");
@@ -26,7 +28,7 @@ export default function SpecialForm({
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   async function save() {
-    if (!title.trim()) return setMsg({ kind: "err", text: "Dish name is required." });
+    if (!title.trim()) return setMsg({ kind: "err", text: tr("料理名を入力してください。", "Dish name is required.") });
     setBusy(true);
     setMsg(null);
     try {
@@ -46,10 +48,10 @@ export default function SpecialForm({
       }
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setMsg({ kind: "err", text: data?.error ?? `Could not save (HTTP ${res.status}).` });
+        setMsg({ kind: "err", text: data?.error ?? tr(`保存できませんでした（HTTP ${res.status}）。`, `Could not save (HTTP ${res.status}).`) });
         return;
       }
-      setMsg({ kind: "ok", text: existing ? "Special updated." : "Special published." });
+      setMsg({ kind: "ok", text: existing ? tr("おすすめを更新しました。", "Special updated.") : tr("おすすめを公開しました。", "Special published.") });
       router.refresh();
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : String(err) });
@@ -62,29 +64,29 @@ export default function SpecialForm({
     <div className="two-col">
       <div>
         <div className="field">
-          <label htmlFor="title">Dish name</label>
+          <label htmlFor="title">{tr("料理名", "Dish name")}</label>
           <input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Seared bonito with new onion"
+            placeholder={tr("カツオのたたき 新玉ねぎ添え", "Seared bonito with new onion")}
           />
-          <div className="hint">Week of {weekStart} (Mon–Sun).</div>
+          <div className="hint">{tr(`${weekStart}の週（月〜日）`, `Week of ${weekStart} (Mon–Sun).`)}</div>
         </div>
 
         <div className="field">
-          <label htmlFor="description">Description</label>
+          <label htmlFor="description">{tr("説明", "Description")}</label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Shown under the photo on the guest's screen."
+            placeholder={tr("お客様の画面で写真の下に表示されます。", "Shown under the photo on the guest's screen.")}
             style={{ minHeight: 90 }}
           />
         </div>
 
         <div className="field">
-          <label htmlFor="image">Photo URL</label>
+          <label htmlFor="image">{tr("写真URL", "Photo URL")}</label>
           <input
             id="image"
             value={imageUrl}
@@ -92,17 +94,19 @@ export default function SpecialForm({
             placeholder="https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&q=80"
           />
           <div className="hint">
-            Must be a public https URL — it is loaded inside the LINE browser. Landscape crops
-            best; the guest sees it at 4:3.
+            {tr(
+              "公開されているhttpsのURLを指定してください（LINE内のブラウザで読み込まれます）。横長の写真がおすすめです。お客様には4:3で表示されます。",
+              "Must be a public https URL — it is loaded inside the LINE browser. Landscape crops best; the guest sees it at 4:3.",
+            )}
           </div>
         </div>
 
         <div className="form-actions">
           <button className="btn btn-primary" onClick={save} disabled={busy}>
-            {busy ? "Saving…" : existing ? "Update special" : "Publish special"}
+            {busy ? tr("保存中…", "Saving…") : existing ? tr("おすすめを更新", "Update special") : tr("おすすめを公開", "Publish special")}
           </button>
           {existing && existing.responses > 0 && (
-            <span className="muted">{existing.responses} responses so far</span>
+            <span className="muted">{tr(`これまでの回答 ${existing.responses}件`, `${existing.responses} responses so far`)}</span>
           )}
         </div>
 
@@ -111,7 +115,7 @@ export default function SpecialForm({
 
       {/* What the guest sees after paying — mirrors web/rate.html. */}
       <div>
-        <div className="card-title">Guest preview</div>
+        <div className="card-title">{tr("お客様の画面プレビュー", "Guest preview")}</div>
         <div className="phone">
           <div className="phone-bar">COZENE</div>
           <div className="phone-body">
@@ -134,7 +138,7 @@ export default function SpecialForm({
                     fontSize: 13,
                   }}
                 >
-                  Photo
+                  {tr("写真", "Photo")}
                 </div>
               )}
               <div style={{ padding: "12px 14px 14px" }}>
@@ -147,10 +151,10 @@ export default function SpecialForm({
                     color: "var(--brand-ink)",
                   }}
                 >
-                  This week&apos;s special
+                  {tr("今週のおすすめ", "This week's special")}
                 </div>
                 <div style={{ fontWeight: 700, fontSize: 15, marginTop: 5, lineHeight: 1.35 }}>
-                  {title || <span className="muted">Dish name</span>}
+                  {title || <span className="muted">{tr("料理名", "Dish name")}</span>}
                 </div>
                 {description && (
                   <div className="muted" style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.55 }}>
@@ -161,26 +165,26 @@ export default function SpecialForm({
             </div>
 
             <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, margin: "16px 0 9px" }}>
-              How was it?
+              {tr("いかがでしたか？", "How was it?")}
             </div>
             <div className="rate-choices">
               <div className="rate-choice">
                 <span className="emoji">😀</span>
-                <span className="label">Good</span>
+                <span className="label">{tr("良い", "Good")}</span>
               </div>
               <div className="rate-choice">
                 <span className="emoji">😐</span>
-                <span className="label">OK</span>
+                <span className="label">{tr("普通", "OK")}</span>
               </div>
               <div className="rate-choice">
                 <span className="emoji">😕</span>
-                <span className="label">Not good</span>
+                <span className="label">{tr("いまいち", "Not good")}</span>
               </div>
             </div>
           </div>
         </div>
         <div className="hint" style={{ textAlign: "center" }}>
-          Shown right after payment.
+          {tr("お会計の直後に表示されます。", "Shown right after payment.")}
         </div>
       </div>
     </div>

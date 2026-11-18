@@ -6,26 +6,48 @@ import { adminPost } from "@/lib/admin-fetch";
 import type { StoreProfile } from "@/lib/miniapp";
 import { TRANSLATABLE } from "@/lib/i18n";
 import TranslateButton from "../TranslateButton";
+import { useTr } from "../../LangProvider";
 
-const FIELDS: { key: keyof StoreProfile; label: string; placeholder?: string; multiline?: boolean; hint?: string }[] = [
-  { key: "name", label: "Store name" },
-  { key: "tagline", label: "Tagline", placeholder: "ワインと小皿料理" },
-  { key: "concept", label: "Concept", multiline: true, placeholder: "お店の紹介を数行で。" },
-  { key: "hours", label: "Hours", multiline: true, placeholder: "火〜土 17:00–24:00\n月曜定休", hint: "One line per row, shown as written." },
-  { key: "access", label: "Access", placeholder: "〇〇駅 2番出口から徒歩3分" },
-  { key: "address", label: "Address" },
-  { key: "map_url", label: "Map link", placeholder: "https://maps.app.goo.gl/…" },
-  { key: "phone", label: "Phone", placeholder: "03-1234-5678" },
-  { key: "hero_image_url", label: "Cover photo URL", placeholder: "https://…", hint: "Public https URL, or a photo bundled with the app (img/counter.jpg). Shown at the top of the home page." },
+type Text = { ja: string; en: string };
+
+const FIELDS: { key: keyof StoreProfile; label: Text; placeholder?: Text; multiline?: boolean; hint?: Text }[] = [
+  { key: "name", label: { ja: "店舗名", en: "Store name" } },
+  { key: "tagline", label: { ja: "キャッチコピー", en: "Tagline" }, placeholder: { ja: "ワインと小皿料理", en: "Wine and small plates" } },
+  { key: "concept", label: { ja: "コンセプト", en: "Concept" }, multiline: true, placeholder: { ja: "お店の紹介を数行で。", en: "A few lines about the place." } },
+  {
+    key: "hours",
+    label: { ja: "営業時間", en: "Hours" },
+    multiline: true,
+    placeholder: { ja: "火〜土 17:00–24:00\n月曜定休", en: "Tue–Sat 17:00–24:00\nClosed Mondays" },
+    hint: { ja: "1行ずつ、入力したとおりに表示されます。", en: "One line per row, shown as written." },
+  },
+  { key: "access", label: { ja: "アクセス", en: "Access" }, placeholder: { ja: "〇〇駅 2番出口から徒歩3分", en: "3 min walk from Exit 2, XX Station" } },
+  { key: "address", label: { ja: "住所", en: "Address" } },
+  { key: "map_url", label: { ja: "地図リンク", en: "Map link" }, placeholder: { ja: "https://maps.app.goo.gl/…", en: "https://maps.app.goo.gl/…" } },
+  { key: "phone", label: { ja: "電話番号", en: "Phone" }, placeholder: { ja: "03-1234-5678", en: "03-1234-5678" } },
+  {
+    key: "hero_image_url",
+    label: { ja: "カバー写真URL", en: "Cover photo URL" },
+    placeholder: { ja: "https://…", en: "https://…" },
+    hint: {
+      ja: "公開されているhttpsのURL、またはアプリに同梱の写真（img/counter.jpg）。ホーム画面の一番上に表示されます。",
+      en: "Public https URL, or a photo bundled with the app (img/counter.jpg). Shown at the top of the home page.",
+    },
+  },
 ];
 
-const EN_LABEL: Record<string, string> = {
-  tagline: "Tagline", concept: "Concept", hours: "Hours", access: "Access", address: "Address",
+const EN_LABEL: Record<string, Text> = {
+  tagline: { ja: "キャッチコピー", en: "Tagline" },
+  concept: { ja: "コンセプト", en: "Concept" },
+  hours: { ja: "営業時間", en: "Hours" },
+  access: { ja: "アクセス", en: "Access" },
+  address: { ja: "住所", en: "Address" },
 };
 const MULTILINE = new Set(["concept", "hours"]);
 
 export default function StoreForm({ store, canTranslate }: { store: StoreProfile; canTranslate: boolean }) {
   const router = useRouter();
+  const tr = useTr();
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(FIELDS.map((f) => [f.key, (store[f.key] as string | null) ?? ""]))
   );
@@ -49,8 +71,8 @@ export default function StoreForm({ store, canTranslate }: { store: StoreProfile
       photos: photos.split("\n").map((p) => p.trim()).filter(Boolean),
     });
     setBusy(false);
-    if (!res.ok) return setMsg({ kind: "err", text: res.error ?? "Could not save" });
-    setMsg({ kind: "ok", text: "Saved. Guests see the change next time they open the Mini App." });
+    if (!res.ok) return setMsg({ kind: "err", text: res.error ?? tr("保存できませんでした", "Could not save") });
+    setMsg({ kind: "ok", text: tr("保存しました。お客様が次にミニアプリを開いたときに反映されます。", "Saved. Guests see the change next time they open the Mini App.") });
     router.refresh();
   }
 
@@ -58,21 +80,21 @@ export default function StoreForm({ store, canTranslate }: { store: StoreProfile
     <div style={{ maxWidth: 640 }}>
       {FIELDS.map((f) => (
         <div className="field" key={f.key}>
-          <label htmlFor={f.key}>{f.label}</label>
+          <label htmlFor={f.key}>{tr(f.label.ja, f.label.en)}</label>
           {f.multiline ? (
-            <textarea id={f.key} value={values[f.key]} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder} style={{ minHeight: 90 }} />
+            <textarea id={f.key} value={values[f.key]} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder && tr(f.placeholder.ja, f.placeholder.en)} style={{ minHeight: 90 }} />
           ) : (
-            <input id={f.key} value={values[f.key]} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder} />
+            <input id={f.key} value={values[f.key]} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder && tr(f.placeholder.ja, f.placeholder.en)} />
           )}
-          {f.hint && <div className="hint">{f.hint}</div>}
+          {f.hint && <div className="hint">{tr(f.hint.ja, f.hint.en)}</div>}
         </div>
       ))}
 
       <div className="i18n-block">
         <div className="i18n-head">
           <div>
-            <div className="card-title" style={{ margin: 0 }}>English version</div>
-            <div className="hint">Shown when a guest switches the Mini App to English. Empty fields show the Japanese text.</div>
+            <div className="card-title" style={{ margin: 0 }}>{tr("英語版", "English version")}</div>
+            <div className="hint">{tr("お客様がミニアプリを英語に切り替えたときに表示されます。空欄の項目は日本語で表示されます。", "Shown when a guest switches the Mini App to English. Empty fields show the Japanese text.")}</div>
           </div>
           <TranslateButton
             enabled={canTranslate}
@@ -82,7 +104,7 @@ export default function StoreForm({ store, canTranslate }: { store: StoreProfile
         </div>
         {TRANSLATABLE.store.map((k) => (
           <div className="field" key={k}>
-            <label htmlFor={`en-${k}`}>{EN_LABEL[k]} <span className="muted">(English)</span></label>
+            <label htmlFor={`en-${k}`}>{tr(EN_LABEL[k].ja, EN_LABEL[k].en)} <span className="muted">{tr("（英語）", "(English)")}</span></label>
             {MULTILINE.has(k) ? (
               <textarea id={`en-${k}`} value={english[k]} onChange={(e) => setEnglish({ ...english, [k]: e.target.value })} style={{ minHeight: 90 }} />
             ) : (
@@ -93,21 +115,21 @@ export default function StoreForm({ store, canTranslate }: { store: StoreProfile
       </div>
 
       <div className="field">
-        <label htmlFor="photos">Gallery photo URLs</label>
-        <textarea id="photos" value={photos} onChange={(e) => setPhotos(e.target.value)} placeholder="One per line: https URL or img/… (bundled)" style={{ minHeight: 90 }} />
+        <label htmlFor="photos">{tr("ギャラリー写真URL", "Gallery photo URLs")}</label>
+        <textarea id="photos" value={photos} onChange={(e) => setPhotos(e.target.value)} placeholder={tr("1行に1枚：httpsのURL、または img/…（同梱）", "One per line: https URL or img/… (bundled)")} style={{ minHeight: 90 }} />
       </div>
 
       <div className="field">
-        <label htmlFor="theme">Brand colour</label>
+        <label htmlFor="theme">{tr("ブランドカラー", "Brand colour")}</label>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <input id="theme" type="color" value={theme} onChange={(e) => setTheme(e.target.value)} style={{ width: 56, padding: 2, height: 38 }} />
           <input value={theme} onChange={(e) => setTheme(e.target.value)} style={{ width: 120 }} />
         </div>
-        <div className="hint">Buttons, member card and the free-glass pass use this colour.</div>
+        <div className="hint">{tr("ボタン、会員証、グラスワイン1杯サービスのパスにこの色が使われます。", "Buttons, member card and the free-glass pass use this colour.")}</div>
       </div>
 
       <div className="form-actions">
-        <button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save store"}</button>
+        <button className="btn btn-primary" onClick={save} disabled={busy}>{busy ? tr("保存中…", "Saving…") : tr("店舗情報を保存", "Save store")}</button>
       </div>
       {msg && <div className={`alert ${msg.kind}`}>{msg.text}</div>}
     </div>

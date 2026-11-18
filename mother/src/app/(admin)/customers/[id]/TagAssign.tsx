@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { IconCheck } from "../../../icons";
 import { toggleTagAction } from "./actions";
+import { useTr } from "../../../LangProvider";
 
 type Tag = { id: string; label: string };
 
@@ -17,6 +18,7 @@ export default function TagAssign({
   assigned: string[];
 }) {
   const router = useRouter();
+  const tr = useTr();
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useState<Set<string>>(new Set(assigned));
   const [busy, setBusy] = useState<string | null>(null);
@@ -67,14 +69,15 @@ export default function TagAssign({
         else next.delete(tagId);
         return next;
       });
-      setError(`Could not save: ${err instanceof Error ? err.message : String(err)}`);
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(tr(`保存できませんでした: ${msg}`, `Could not save: ${msg}`));
     } finally {
       setBusy(null);
     }
   }
 
   if (allTags.length === 0)
-    return <div className="muted">No tags defined yet. Create some on the Tags page.</div>;
+    return <div className="muted">{tr("タグがまだありません。タグページで作成してください。", "No tags defined yet. Create some on the Tags page.")}</div>;
 
   return (
     <>
