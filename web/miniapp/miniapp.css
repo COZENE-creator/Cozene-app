@@ -114,6 +114,10 @@ button { font: inherit; cursor: pointer; }
 }
 .tabs a { flex: 1; display: grid; place-items: center; text-decoration: none; color: var(--muted); font-weight: 650; font-size: 14px; }
 .tabs a.on { color: var(--accent); }
+.lang-btn {
+  flex: 0 0 auto; align-self: center; margin: 0 12px 0 4px; padding: 6px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 650;
+}
 
 /* sheets */
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(20,14,10,.45); display: flex; align-items: flex-end; }

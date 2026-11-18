@@ -407,3 +407,7 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
   .qr-grid { grid-template-columns: repeat(3, 1fr); }
   .qr-tile { border-color: #ccc; }
 }
+
+/* English version block on the Store / Menu forms */
+.i18n-block { border-top: 1px solid var(--border); margin: 20px 0 8px; padding-top: 16px; }
+.i18n-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }

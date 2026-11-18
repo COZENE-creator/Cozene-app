@@ -1,6 +1,7 @@
 import { guardApi } from "@/lib/auth-server";
 import { ok, fail, readJsonBody } from "@/lib/http";
 import { adminStoreId, updateStoreProfile } from "@/lib/store-admin";
+import { cleanTranslations, TRANSLATABLE } from "@/lib/i18n";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     hero_image_url: text(body.hero_image_url),
     photos,
     theme_color: themeColor,
+    translations: cleanTranslations(body.translations, TRANSLATABLE.store),
   });
   return ok();
 }

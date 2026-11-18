@@ -1,6 +1,7 @@
 import { getStoreProfile } from "@/lib/miniapp";
 import { adminStoreId, hasStaffPin, listRedemptions } from "@/lib/store-admin";
 import { datetime } from "@/lib/format";
+import { translateConfigured } from "@/lib/translate";
 import StoreForm from "./StoreForm";
 import PinForm from "./PinForm";
 
@@ -19,12 +20,12 @@ export default async function StorePage() {
       <div className="page-head">
         <div className="titles">
           <h1>Store</h1>
-          <p className="sub">What guests see on the Mini App home page — no login needed. Store id <span className="mono">{store.slug}</span>.</p>
+          <p className="sub">What guests see on the Mini App home page — no login needed. Write in Japanese (the app&apos;s default language) and add English below. Store id <span className="mono">{store.slug}</span>.</p>
         </div>
       </div>
 
       <div className="card pad">
-        <StoreForm store={store} />
+        <StoreForm store={store} canTranslate={translateConfigured()} />
       </div>
 
       <h2>Staff PIN</h2>

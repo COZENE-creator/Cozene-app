@@ -5,6 +5,9 @@
 //   * Member card:  login → consent → visit count + benefits.
 //   * ?table=7:     login → consent → party size → check-in → free-glass pass
 //                   on a first visit.
+//   * Language:     Japanese by default, English via the switch in the tab bar
+//                   (remembered on this phone). Store and menu text come from the
+//                   server with an English version in each row's `translations`.
 //
 // Identity: the server never trusts a userId from here. Every member call
 // sends liff.getIDToken() and the Mother System verifies it with LINE.
@@ -24,7 +27,178 @@
   const HEADERS = { "ngrok-skip-browser-warning": "1" };
 
   const $ = (id) => document.getElementById(id);
-  const state = { store: null, slug: "", table: "", me: null, partySize: 0, pin: "" };
+  const state = { store: null, menu: [], slug: "", table: "", me: null, partySize: 0, pin: "" };
+
+  // ─── language ─────────────────────────────────────────────────────────────
+
+  const LANGS = ["ja", "en"]; // first = default
+  const STRINGS = {
+    ja: {
+      tab_home: "ホーム", tab_menu: "メニュー", tab_member: "会員証", lang_switch: "EN",
+      loading: "読み込み中…",
+      hours: "営業時間", access: "アクセス", address: "住所", map: "地図", open_map: "地図を開く", phone: "電話",
+      menu_empty: "本日の内容はスタッフにおたずねください。",
+      menu_foot: "価格はすべて税込です。",
+      member_label: "MEMBER",
+      member_gate: "会員証を表示するには、データ利用への同意が必要です。",
+      could_not_load: "読み込めませんでした: {0}",
+      guest: "ゲスト",
+      visits: (n) => "回のご来店",
+      member_since: "会員登録日 {0}",
+      first_visit_hint: "テーブルのQRコードを読み取ると、初回のご来店が記録されます。",
+      checked_in_at: "{0} チェックイン", table_n: "テーブル {0}", party_n: (n) => n + "名",
+      benefits: "特典", privacy: "プライバシー",
+      no_benefits: "現在ご利用いただける特典はありません。",
+      b_available: "ご利用いただけます。スタッフにお見せください。",
+      b_locked: "初回ご来店時にテーブルのQRコードを読み取ると利用できます。",
+      b_redeemed: "{0} にご利用済み",
+      b_expired: "この特典は初回ご来店時のみ有効でした。",
+      show: "表示",
+      partner_title: "提携店舗との共有",
+      partner_body: "他のCozene提携レストランでもお客様を認識し、特典をお届けできるようになります。",
+      partner_on: "提携店舗との共有をオンにしました。", partner_off: "提携店舗との共有をオフにしました。",
+      could_not_save: "保存できませんでした: {0}",
+      consent_title: "ご利用の前に",
+      consent_lead: "{store}は、ご来店やご注文を記録するためにLINE IDを利用し、会員証の表示やお客様に合わせたメッセージのお届けに役立てます。",
+      consent_point_store: "保存する情報: LINE IDと表示名、チェックイン時刻、テーブル番号、人数、ご注文内容。",
+      consent_point_use: "利用目的: 会員証と特典の提供、お客様に合わせたLINEメッセージの配信。",
+      consent_point_stop: "公式アカウントをブロックすると、いつでもメッセージを停止できます。",
+      consent_store: "上記のとおり{store}が私のデータを利用することに同意します。",
+      consent_partner: "Cozene提携店舗にも共有し、来店時の認識や特典のお届けに利用することに同意します。",
+      required: "（必須）", optional: "（任意）",
+      policy_version: "ポリシー版",
+      consent_agree: "同意して続ける", not_now: "今はしない",
+      checkin_title: "チェックイン — テーブル {0}",
+      party_question: "何名様でご来店ですか？",
+      check_in: "チェックイン", cancel: "キャンセル",
+      checkin_cta: "テーブル {0} でチェックイン",
+      checkin_needs_consent: "チェックインにはデータ利用への同意が必要です。",
+      could_not_checkin: "チェックインできませんでした: {0}",
+      checked_in: "チェックインしました。ご来店ありがとうございます！",
+      checkin_updated: "チェックイン情報を更新しました。",
+      welcome_gift: "ウェルカムギフト", enjoy: "どうぞお楽しみください！", confirmed_at: "{0} に確認しました",
+      staff_pin: "スタッフPIN",
+      pass_hint: "この画面をスタッフにお見せください。時計が動いていることが有効な画面の印です。",
+      staff_confirm: "スタッフ確認", close: "閉じる",
+      enter_pin: "4〜8桁のスタッフPINを入力してください。",
+      err_wrong_pin: "PINが違います。",
+      err_pin_locked: "PINの誤入力が続いたため、15分後にもう一度お試しください。",
+      err_pin_not_set: "スタッフPINが未設定です。スタッフにお知らせください。",
+      err_already_used: "この特典はすでにご利用済みです。",
+      err_not_available: "この特典は今回のご来店ではご利用いただけません。",
+      err_consent_required: "データ利用への同意が必要です。",
+      setup_needed: "設定が必要です: config.js に MINIAPP_LIFF_ID を設定してください。",
+      could_not_start: "起動できませんでした: {0}",
+      no_store: "店舗が選択されていません。店内のQRコードを読み取ってください。",
+      could_not_load_store: "店舗情報を読み込めませんでした: {0}",
+    },
+    en: {
+      tab_home: "Home", tab_menu: "Menu", tab_member: "Member", lang_switch: "日本語",
+      loading: "Loading…",
+      hours: "Hours", access: "Access", address: "Address", map: "Map", open_map: "Open map", phone: "Phone",
+      menu_empty: "Ask our staff about today's selection.",
+      menu_foot: "All prices include tax.",
+      member_label: "MEMBER",
+      member_gate: "Agree to the data-use terms to see your member card.",
+      could_not_load: "Could not load: {0}",
+      guest: "Guest",
+      visits: (n) => (n === 1 ? "visit" : "visits"),
+      member_since: "Member since {0}",
+      first_visit_hint: "Scan the QR on your table to record your first visit.",
+      checked_in_at: "Checked in at {0}", table_n: "Table {0}", party_n: (n) => n + (n === 1 ? " guest" : " guests"),
+      benefits: "Benefits", privacy: "Privacy",
+      no_benefits: "No benefits right now.",
+      b_available: "Ready — show it to staff now.",
+      b_locked: "Scan the QR on your table on your first visit to unlock.",
+      b_redeemed: "Used on {0}.",
+      b_expired: "This welcome gift was for your first visit.",
+      show: "Show",
+      partner_title: "Share with partner stores",
+      partner_body: "Let other Cozene partner restaurants recognise you and send offers.",
+      partner_on: "Sharing with partner stores is on.", partner_off: "Sharing with partner stores is off.",
+      could_not_save: "Could not save: {0}",
+      consent_title: "Before you continue",
+      consent_lead: "{store} uses your LINE ID to record your visits and orders, so it can show your member card and send you messages that suit you.",
+      consent_point_store: "We store: your LINE ID and display name, check-in time, table, party size, and orders.",
+      consent_point_use: "We use it to: run your member card and benefits, and send you personalised LINE messages.",
+      consent_point_stop: "You can stop messages any time by blocking the official account.",
+      consent_store: "I agree to {store} using my data as described.",
+      consent_partner: "Also share it with Cozene partner stores so they can recognise me and send offers.",
+      required: "(required)", optional: "(optional)",
+      policy_version: "Policy version",
+      consent_agree: "Agree and continue", not_now: "Not now",
+      checkin_title: "Check in — Table {0}",
+      party_question: "How many people are in your party?",
+      check_in: "Check in", cancel: "Cancel",
+      checkin_cta: "Check in to Table {0}",
+      checkin_needs_consent: "Check-in needs your agreement to the data-use terms.",
+      could_not_checkin: "Could not check in: {0}",
+      checked_in: "Checked in. Welcome back!",
+      checkin_updated: "Check-in updated.",
+      welcome_gift: "Welcome gift", enjoy: "Enjoy your glass!", confirmed_at: "Confirmed at {0}",
+      staff_pin: "Staff PIN",
+      pass_hint: "Show this screen to staff. The clock proves it is live.",
+      staff_confirm: "Staff: confirm", close: "Close",
+      enter_pin: "Enter the 4–8 digit staff PIN.",
+      err_wrong_pin: "Wrong PIN.",
+      err_pin_locked: "Too many wrong PINs. Try again in 15 minutes.",
+      err_pin_not_set: "The staff PIN isn't set yet. Please tell the staff.",
+      err_already_used: "This gift has already been used.",
+      err_not_available: "This gift isn't available for this visit.",
+      err_consent_required: "Please agree to the data-use terms first.",
+      setup_needed: "Setup needed: set MINIAPP_LIFF_ID in config.js",
+      could_not_start: "Could not start: {0}",
+      no_store: "No store selected. Scan the QR code at the restaurant.",
+      could_not_load_store: "Could not load the store: {0}",
+    },
+  };
+
+  let lang = LANGS[0];
+  try {
+    const saved = localStorage.getItem("cz_lang");
+    if (LANGS.includes(saved)) lang = saved;
+  } catch (e) { /* storage blocked */ }
+
+  /** Interface text in the current language. "{0}" is replaced by `arg`, "{store}" by the store name. */
+  function t(key, arg) {
+    const v = STRINGS[lang][key] ?? STRINGS[LANGS[0]][key] ?? key;
+    const text = typeof v === "function" ? v(arg) : v;
+    return text.replace("{0}", arg == null ? "" : arg).replace("{store}", state.store ? state.store.name : "");
+  }
+
+  /** A row's field in the current language; falls back to the default-language column. */
+  function loc(row, field) {
+    const tr = row && row.translations && row.translations[lang];
+    return (tr && tr[field]) || row[field];
+  }
+
+  /** Message for an API error: translated when the server sent a known code. */
+  function errText(err) {
+    const key = "err_" + err.code;
+    return STRINGS[lang][key] ? t(key) : err.message;
+  }
+
+  function applyStaticText() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach((n) => (n.textContent = t(n.dataset.i18n)));
+    $("langBtn").textContent = t("lang_switch");
+  }
+
+  function setLanguage(next) {
+    lang = next;
+    try { localStorage.setItem("cz_lang", lang); } catch (e) { /* storage blocked */ }
+    applyStaticText();
+    if (state.store) {
+      renderStore(state.store);
+      renderMenu(state.menu);
+    }
+    if (state.table) $("tableCta").textContent = t("checkin_cta", state.table);
+    $("ciTitle").textContent = t("checkin_title", state.table);
+    if (passBenefit) $("passTitle").textContent = loc(passBenefit, "title");
+    if (state.me && !$("memberBody").hidden) renderMember(state.me);
+  }
+
+  $("langBtn").addEventListener("click", () => setLanguage(lang === LANGS[0] ? LANGS[1] : LANGS[0]));
 
   // ─── helpers ──────────────────────────────────────────────────────────────
 
@@ -145,20 +319,21 @@
       if (ink) document.documentElement.style.setProperty("--accent-ink", ink);
     }
     $("storeName").textContent = s.name;
-    $("storeTagline").textContent = s.tagline || "";
-    $("storeConcept").textContent = s.concept || "";
+    $("storeTagline").textContent = loc(s, "tagline") || "";
+    $("storeConcept").textContent = loc(s, "concept") || "";
     if (s.hero_image_url) $("hero").style.backgroundImage = "url(" + JSON.stringify(s.hero_image_url) + ")";
 
     const info = $("storeInfo");
     info.innerHTML = "";
     const row = (label, value) => value && info.append(el("div", {}, [el("dt", { text: label }), el("dd", {}, [value])]));
-    row("Hours", s.hours && document.createTextNode(s.hours));
-    row("Access", s.access && document.createTextNode(s.access));
-    row("Address", s.address && (s.map_url
-      ? el("a", { href: s.map_url, target: "_blank", rel: "noopener", text: s.address })
-      : document.createTextNode(s.address)));
-    if (!s.address && s.map_url) row("Map", el("a", { href: s.map_url, target: "_blank", rel: "noopener", text: "Open map" }));
-    row("Phone", s.phone && el("a", { href: "tel:" + s.phone.replace(/[^\d+]/g, ""), text: s.phone }));
+    const hours = loc(s, "hours"), access = loc(s, "access"), address = loc(s, "address");
+    row(t("hours"), hours && document.createTextNode(hours));
+    row(t("access"), access && document.createTextNode(access));
+    row(t("address"), address && (s.map_url
+      ? el("a", { href: s.map_url, target: "_blank", rel: "noopener", text: address })
+      : document.createTextNode(address)));
+    if (!address && s.map_url) row(t("map"), el("a", { href: s.map_url, target: "_blank", rel: "noopener", text: t("open_map") }));
+    row(t("phone"), s.phone && el("a", { href: "tel:" + s.phone.replace(/[^\d+]/g, ""), text: s.phone }));
     info.hidden = !info.children.length;
 
     const photos = $("storePhotos");
@@ -179,7 +354,7 @@
       const anchor = "cat-" + cat.key;
       nav.append(el("a", {
         href: "#menu",
-        text: cat.label,
+        text: loc(cat, "label"),
         onclick: (e) => {
           e.preventDefault();
           $(anchor).scrollIntoView({ behavior: "smooth" });
@@ -188,17 +363,17 @@
       const items = cat.items.length
         ? cat.items.map((i) =>
             el("div", { class: "menu-item" }, [
-              el("div", { class: "name", text: i.name }),
+              el("div", { class: "name", text: loc(i, "name") }),
               el("div", { class: "price" }, [
                 i.price != null ? yen(i.price) : "—",
-                i.price_note ? el("span", { class: "note", text: i.price_note }) : null,
+                loc(i, "price_note") ? el("span", { class: "note", text: loc(i, "price_note") }) : null,
               ]),
-              i.description ? el("div", { class: "desc", text: i.description }) : null,
+              loc(i, "description") ? el("div", { class: "desc", text: loc(i, "description") }) : null,
               i.image_url ? el("img", { src: i.image_url, alt: "", loading: "lazy" }) : null,
             ])
           )
-        : [el("div", { class: "menu-empty", text: "Ask our staff about today's selection." })];
-      list.append(el("section", { class: "menu-cat", id: anchor }, [el("h2", { text: cat.label })].concat(items)));
+        : [el("div", { class: "menu-empty", text: t("menu_empty") })];
+      list.append(el("section", { class: "menu-cat", id: anchor }, [el("h2", { text: loc(cat, "label") })].concat(items)));
     });
   }
 
@@ -225,7 +400,7 @@
           $("consentSheet").hidden = true;
           resolve(true);
         } catch (err) {
-          toast("Could not save: " + err.message);
+          toast(t("could_not_save", errText(err)));
           $("consentAgree").disabled = false;
         }
       };
@@ -249,16 +424,16 @@
   async function openMember() {
     $("memberBody").hidden = true;
     $("memberState").hidden = false;
-    $("memberState").textContent = "Loading…";
+    $("memberState").textContent = t("loading");
     try {
       const me = await memberSession();
       if (!me) {
-        $("memberState").textContent = "Agree to the data-use terms to see your member card.";
+        $("memberState").textContent = t("member_gate");
         return;
       }
       renderMember(me);
     } catch (err) {
-      $("memberState").textContent = "Could not load: " + err.message;
+      $("memberState").textContent = t("could_not_load", errText(err));
     }
   }
 
@@ -266,20 +441,21 @@
     $("memberState").hidden = true;
     $("memberBody").hidden = false;
     $("mcStore").textContent = state.store.name;
-    $("mcName").textContent = me.guest.display_name || "Guest";
+    $("mcName").textContent = me.guest.display_name || t("guest");
     $("mcCount").textContent = me.member.visit_count;
-    $("mcCountLabel").textContent = me.member.visit_count === 1 ? "visit" : "visits";
+    $("mcCountLabel").textContent = t("visits", me.member.visit_count);
     $("mcSince").textContent = me.member.first_visit_at
-      ? "Member since " + date(me.member.first_visit_at)
-      : "Scan the QR on your table to record your first visit.";
+      ? t("member_since", date(me.member.first_visit_at))
+      : t("first_visit_hint");
 
     const cv = me.member.current_visit;
     $("currentVisit").hidden = !cv;
     if (cv) {
-      $("currentVisit").textContent =
-        "Checked in at " + time(cv.checked_in_at) +
-        (cv.table_no ? " · Table " + cv.table_no : "") +
-        (cv.party_size ? " · " + cv.party_size + (cv.party_size === 1 ? " guest" : " guests") : "");
+      $("currentVisit").textContent = [
+        t("checked_in_at", time(cv.checked_in_at)),
+        cv.table_no ? t("table_n", cv.table_no) : null,
+        cv.party_size ? t("party_n", cv.party_size) : null,
+      ].filter(Boolean).join(" · ");
     }
 
     renderBenefits(me.benefits);
@@ -290,20 +466,17 @@
     const list = $("benefitList");
     list.innerHTML = "";
     if (!benefits.length) {
-      list.append(el("div", { class: "notice", text: "No benefits right now." }));
+      list.append(el("div", { class: "notice", text: t("no_benefits") }));
       return;
     }
     benefits.forEach((b) => {
-      const sub = {
-        available: "Ready — show it to staff now.",
-        locked: "Scan the QR on your table on your first visit to unlock.",
-        redeemed: "Used on " + (b.redeemed_at ? date(b.redeemed_at) : "") + ".",
-        expired: "This welcome gift was for your first visit.",
-      }[b.status];
+      const sub = b.status === "redeemed"
+        ? t("b_redeemed", b.redeemed_at ? date(b.redeemed_at) : "")
+        : t("b_" + b.status);
       list.append(el("div", { class: "benefit" + (b.status === "available" ? "" : " dim") }, [
         el("span", { class: "b-icon", text: b.status === "redeemed" ? "✓" : "🍷" }),
-        el("div", { class: "b-text" }, [el("div", { class: "b-title", text: b.title }), el("div", { class: "b-sub", text: sub })]),
-        b.status === "available" ? el("button", { text: "Show", onclick: () => openPass(b) }) : null,
+        el("div", { class: "b-text" }, [el("div", { class: "b-title", text: loc(b, "title") }), el("div", { class: "b-sub", text: sub })]),
+        b.status === "available" ? el("button", { text: t("show"), onclick: () => openPass(b) }) : null,
       ]));
     });
   }
@@ -312,10 +485,10 @@
     const on = e.target.checked;
     try {
       await api("/consent", { partner_sharing: on });
-      toast(on ? "Sharing with partner stores is on." : "Sharing with partner stores is off.");
+      toast(t(on ? "partner_on" : "partner_off"));
     } catch (err) {
       e.target.checked = !on;
-      toast("Could not save: " + err.message);
+      toast(t("could_not_save", errText(err)));
     }
   });
 
@@ -340,13 +513,13 @@
   async function startCheckin() {
     try {
       const me = await memberSession();
-      if (!me) return toast("Check-in needs your agreement to the data-use terms.");
+      if (!me) return toast(t("checkin_needs_consent"));
     } catch (err) {
-      return toast("Could not check in: " + err.message);
+      return toast(t("could_not_checkin", errText(err)));
     }
     state.partySize = 0;
     buildPartyGrid();
-    $("ciTable").textContent = state.table;
+    $("ciTitle").textContent = t("checkin_title", state.table);
     $("checkinGo").disabled = true;
     $("checkinErr").hidden = true;
     $("checkinSheet").hidden = false;
@@ -373,10 +546,10 @@
       state.me = Object.assign({}, state.me, { member: res.member, benefits: res.benefits });
       const welcome = res.benefits.find((b) => b.status === "available");
       if (welcome) openPass(welcome);
-      else toast(res.is_new ? "Checked in. Welcome back!" : "Check-in updated.");
+      else toast(t(res.is_new ? "checked_in" : "checkin_updated"));
       if (currentTab() === "member") renderMember(state.me);
     } catch (err) {
-      $("checkinErr").textContent = "Could not check in: " + err.message;
+      $("checkinErr").textContent = t("could_not_checkin", errText(err));
       $("checkinErr").hidden = false;
       $("checkinGo").disabled = false;
     }
@@ -389,7 +562,7 @@
 
   function openPass(b) {
     passBenefit = b;
-    $("passTitle").textContent = b.title;
+    $("passTitle").textContent = loc(b, "title");
     $("passGuest").textContent = (state.me && state.me.guest.display_name) || "";
     $("pinPad").hidden = true;
     $("passDone").hidden = true;
@@ -435,7 +608,7 @@
   }
 
   async function submitPin() {
-    if (state.pin.length < 4) return ($("pinErr").textContent = "Enter the 4–8 digit staff PIN.");
+    if (state.pin.length < 4) return ($("pinErr").textContent = t("enter_pin"));
     const pin = state.pin;
     state.pin = "";
     renderPin();
@@ -444,7 +617,7 @@
       $("pinPad").hidden = true;
       $("passStaff").hidden = true;
       $("passHint").hidden = true;
-      $("passDoneAt").textContent = "Confirmed at " + time(res.redeemed_at);
+      $("passDoneAt").textContent = t("confirmed_at", time(res.redeemed_at));
       $("passDone").hidden = false;
       if (state.me) {
         state.me.benefits = state.me.benefits.map((b) =>
@@ -452,7 +625,7 @@
         );
       }
     } catch (err) {
-      $("pinErr").textContent = err.code === "wrong_pin" ? "Wrong PIN." : err.message;
+      $("pinErr").textContent = errText(err);
     }
   }
 
@@ -469,30 +642,33 @@
   // ─── boot ─────────────────────────────────────────────────────────────────
 
   async function main() {
+    applyStaticText();
     if (!DEV_USER) {
-      if (!LIFF_ID || LIFF_ID === "YOUR_LIFF_ID") return fatal("Setup needed: set MINIAPP_LIFF_ID in config.js");
+      if (!LIFF_ID || LIFF_ID === "YOUR_LIFF_ID") return fatal(t("setup_needed"));
       try {
         // init restores the original query (?store, ?table) after LINE's redirect.
         await liff.init({ liffId: LIFF_ID });
       } catch (err) {
-        return fatal("Could not start: " + err);
+        return fatal(t("could_not_start", String(err)));
       }
     }
 
     const params = new URLSearchParams(location.search);
     state.slug = (params.get("store") || cfg.STORE_ID || "").trim();
     state.table = (params.get("table") || "").trim().slice(0, 16);
-    if (!state.slug) return fatal("No store selected. Scan the QR code at the restaurant.");
+    if (!state.slug) return fatal(t("no_store"));
 
     try {
       const res = await fetch(API + "/store?store=" + encodeURIComponent(state.slug), { headers: HEADERS });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "HTTP " + res.status);
       state.store = data.store;
+      state.menu = data.menu;
+      applyStaticText(); // fills {store} in the consent text
       renderStore(data.store);
       renderMenu(data.menu);
     } catch (err) {
-      return fatal("Could not load the store: " + err.message);
+      return fatal(t("could_not_load_store", err.message));
     }
 
     $("boot").hidden = true;
@@ -500,7 +676,7 @@
     $("tabs").hidden = false;
 
     if (state.table) {
-      $("tableCta").textContent = "Check in to Table " + state.table;
+      $("tableCta").textContent = t("checkin_cta", state.table);
       $("tableCta").hidden = false;
       $("tableCta").onclick = startCheckin;
     }

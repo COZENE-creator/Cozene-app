@@ -87,6 +87,14 @@ with LINE (`src/lib/line-login.ts`). All stores live under one LINE provider, so
 the same person everywhere → `guests` (cross-store) ← `users.guest_id` (per store). Nothing is
 recorded against a store until the guest agrees to store data use.
 
+**Languages.** Japanese is the default; guests switch to English in the tab bar (remembered per
+phone). Interface text is in `../web/miniapp/miniapp.js` (`STRINGS`). Store, menu and benefit
+text: the regular columns hold Japanese, English sits in each row's `translations` jsonb
+(`../db/migrations/0004_i18n.sql`) and falls back to Japanese when missing. Mother → Store / Menu
+have English fields and an **Auto-translate from Japanese** button (`/api/admin/translate`,
+Claude API) that is enabled when `ANTHROPIC_API_KEY` is set. To add a language: add it to
+`LANGUAGES` in `src/lib/i18n.ts` and a `STRINGS` block in `miniapp.js`.
+
 **Rules.** Re-scanning within 3 h updates the same visit (no inflated visit counts). The free
 glass is available during the guest's first visit at that store (6 h window) and can be
 redeemed once (DB unique key). Wrong PINs: 5 per guest per 15 min (in-memory — move to the DB

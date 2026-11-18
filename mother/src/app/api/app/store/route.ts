@@ -26,8 +26,9 @@ export async function GET(req: Request) {
     menu: menu.map((c) => ({
       key: c.key,
       label: c.label,
-      items: c.items.map(({ id, name, description, price, price_note, image_url }) => ({
-        id, name, description, price, price_note, image_url,
+      translations: c.translations,
+      items: c.items.map(({ id, name, description, price, price_note, image_url, translations }) => ({
+        id, name, description, price, price_note, image_url, translations,
       })),
     })),
   });

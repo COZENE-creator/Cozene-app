@@ -24,10 +24,10 @@ export async function POST(req: Request) {
   if (!benefitKey) return bad("benefit is required");
 
   const limiterKey = `${ctx.storeId}:${ctx.guestId}`;
-  if (pinLocked(limiterKey)) return json(429, { ok: false, error: "Too many wrong PINs. Try again in 15 minutes." });
+  if (pinLocked(limiterKey)) return json(429, { ok: false, error: "pin_locked" });
 
   const store = await getStaffPinHash(ctx.storeId);
-  if (!store?.staff_pin_hash) return bad("Staff PIN is not set for this store", 409);
+  if (!store?.staff_pin_hash) return bad("pin_not_set", 409);
   if (!verifyPin(String(body.pin || ""), store.staff_pin_hash)) {
     notePinFailure(limiterKey);
     return json(403, { ok: false, error: "wrong_pin" });

@@ -12,6 +12,13 @@ const BENEFIT_WINDOW_HOURS = 6;
 
 // ─── public store page ─────────────────────────────────────────────────────
 
+/**
+ * Other-language versions of a row's text, keyed by language code and then by
+ * column name: {"en": {"name": "Duck leg confit"}}. The columns themselves hold
+ * the default language (Japanese). See db/migrations/0004_i18n.sql.
+ */
+export type Translations = Record<string, Record<string, string>>;
+
 export type StoreProfile = {
   id: string;
   slug: string;
@@ -26,10 +33,11 @@ export type StoreProfile = {
   hero_image_url: string | null;
   photos: string[];
   theme_color: string | null;
+  translations: Translations;
 };
 
 const PROFILE_COLUMNS = `id, slug, name, tagline, concept, hours, address, access, phone,
-  map_url, hero_image_url, photos, theme_color`;
+  map_url, hero_image_url, photos, theme_color, translations`;
 
 export function getStoreProfileBySlug(slug: string): Promise<StoreProfile | null> {
   return queryOne<StoreProfile>(`SELECT ${PROFILE_COLUMNS} FROM stores WHERE slug = $1`, [slug]);
@@ -49,6 +57,7 @@ export type MenuItem = {
   image_url: string | null;
   sort_order: number;
   is_available: boolean;
+  translations: Translations;
 };
 
 export type MenuCategory = {
@@ -56,6 +65,7 @@ export type MenuCategory = {
   key: string;
   label: string;
   sort_order: number;
+  translations: Translations;
   items: MenuItem[];
 };
 
@@ -63,13 +73,13 @@ export type MenuCategory = {
 export async function getMenu(storeId: string, opts: { includeHidden?: boolean } = {}): Promise<MenuCategory[]> {
   const [cats, items] = await Promise.all([
     query<Omit<MenuCategory, "items">>(
-      `SELECT id, key, label, sort_order FROM menu_categories
+      `SELECT id, key, label, sort_order, translations FROM menu_categories
         WHERE store_id = $1 ORDER BY sort_order, label`,
       [storeId]
     ),
     query<MenuItem>(
       `SELECT id, category_id, name, description, price::int AS price, price_note, image_url,
-              sort_order, is_available
+              sort_order, is_available, translations
          FROM menu_items
         WHERE store_id = $1 AND ($2::boolean OR is_available)
         ORDER BY sort_order, name`,
@@ -172,6 +182,7 @@ export type BenefitState = {
   key: string;
   title: string;
   description: string | null;
+  translations: Translations;
   status: BenefitStatus;
   redeemed_at: string | null;
   /** The first visit the benefit belongs to (set when available). */
@@ -184,9 +195,10 @@ export async function getBenefits(storeId: string, guestId: string, userId: stri
     key: string;
     title: string;
     description: string | null;
+    translations: Translations;
     redeemed_at: string | null;
   }>(
-    `SELECT b.id, b.key, b.title, b.description, r.redeemed_at
+    `SELECT b.id, b.key, b.title, b.description, b.translations, r.redeemed_at
        FROM benefits b
        LEFT JOIN benefit_redemptions r ON r.benefit_id = b.id AND r.guest_id = $2
       WHERE b.store_id = $1 AND b.is_active AND b.rule = 'first_visit'
@@ -212,6 +224,7 @@ export async function getBenefits(storeId: string, guestId: string, userId: stri
       key: b.key,
       title: b.title,
       description: b.description,
+      translations: b.translations,
       status,
       redeemed_at: b.redeemed_at,
       visit_id: status === "available" ? first!.visit_id : null,
@@ -231,9 +244,9 @@ export async function redeemBenefit(input: {
 }): Promise<{ ok: true; redeemed_at: string } | { ok: false; error: string }> {
   const states = await getBenefits(input.storeId, input.guestId, input.userId);
   const state = states.find((b) => b.key === input.benefitKey);
-  if (!state) return { ok: false, error: "Unknown benefit" };
-  if (state.status === "redeemed") return { ok: false, error: "Already used" };
-  if (state.status !== "available") return { ok: false, error: "Not available for this visit" };
+  if (!state) return { ok: false, error: "unknown_benefit" };
+  if (state.status === "redeemed") return { ok: false, error: "already_used" };
+  if (state.status !== "available") return { ok: false, error: "not_available" };
 
   const row = await queryOne<{ redeemed_at: string }>(
     `INSERT INTO benefit_redemptions (benefit_id, store_id, guest_id, user_id, visit_id)
@@ -242,7 +255,7 @@ export async function redeemBenefit(input: {
      RETURNING redeemed_at`,
     [input.storeId, input.benefitKey, input.guestId, input.userId, state.visit_id]
   );
-  if (!row) return { ok: false, error: "Already used" };
+  if (!row) return { ok: false, error: "already_used" };
   return { ok: true, redeemed_at: row.redeemed_at };
 }
 

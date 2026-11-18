@@ -7,6 +7,7 @@ import {
   upsertMenuItem,
   deleteMenuItem,
 } from "@/lib/store-admin";
+import { cleanTranslations, TRANSLATABLE } from "@/lib/i18n";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,10 @@ export async function POST(req: Request) {
       if (!label) return fail("Category name is required");
       // Key is derived once from the label; it stays fixed when the label is renamed.
       const key = text(body.key) ?? (label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `cat_${Date.now()}`);
-      await upsertCategory(storeId, { id, key, label, sort_order: int(body.sort_order) });
+      await upsertCategory(storeId, {
+        id, key, label, sort_order: int(body.sort_order),
+        translations: cleanTranslations(body.translations, TRANSLATABLE.category),
+      });
       return ok();
     }
     case "delete_category":
@@ -68,6 +72,7 @@ export async function POST(req: Request) {
           image_url: imageUrl,
           sort_order: int(body.sort_order),
           is_available: body.is_available !== false,
+          translations: cleanTranslations(body.translations, TRANSLATABLE.item),
         });
       } catch (err) {
         return fail(err instanceof Error ? err.message : String(err));

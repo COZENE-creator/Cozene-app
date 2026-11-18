@@ -387,6 +387,10 @@ person at every store.
 | `benefits` | per-store offers; `first_visit_glass` with `rule='first_visit'` |
 | `benefit_redemptions` | one per guest per benefit — `UNIQUE (benefit_id, guest_id)` makes "once per guest" a DB guarantee; links the `visit_id` it was used on |
 
+**Languages (`0004_i18n.sql`).** The text columns of `stores`, `menu_categories`, `menu_items`
+and `benefits` hold the default language (Japanese). Each of those tables has
+`translations jsonb` = `{"en": {"<column>": "…"}}`; a missing field falls back to the column.
+
 ## How data flows in
 
 | Trigger | Endpoint | Writes |

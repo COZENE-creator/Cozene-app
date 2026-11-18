@@ -1,6 +1,7 @@
 import { query, queryOne } from "./db";
 import { resolveStoreForLine } from "./stores";
 import { hashPin } from "./pin";
+import type { Translations } from "./miniapp";
 
 /**
  * Admin-side editing of what the Mini App shows: store profile, staff PIN,
@@ -24,6 +25,7 @@ export type StoreProfileInput = {
   hero_image_url: string | null;
   photos: string[];
   theme_color: string | null;
+  translations: Translations;
 };
 
 export async function updateStoreProfile(storeId: string, p: StoreProfileInput): Promise<void> {
@@ -31,10 +33,10 @@ export async function updateStoreProfile(storeId: string, p: StoreProfileInput):
     `UPDATE stores
         SET name = $2, tagline = $3, concept = $4, hours = $5, address = $6, access = $7,
             phone = $8, map_url = $9, hero_image_url = $10, photos = $11::jsonb, theme_color = $12,
-            updated_at = now()
+            translations = $13::jsonb, updated_at = now()
       WHERE id = $1`,
     [storeId, p.name, p.tagline, p.concept, p.hours, p.address, p.access, p.phone,
-     p.map_url, p.hero_image_url, JSON.stringify(p.photos), p.theme_color]
+     p.map_url, p.hero_image_url, JSON.stringify(p.photos), p.theme_color, JSON.stringify(p.translations)]
   );
 }
 
@@ -54,19 +56,22 @@ export async function hasStaffPin(storeId: string): Promise<boolean> {
 
 export async function upsertCategory(
   storeId: string,
-  c: { id?: string; key: string; label: string; sort_order: number }
+  c: { id?: string; key: string; label: string; sort_order: number; translations: Translations }
 ): Promise<void> {
+  const tr = JSON.stringify(c.translations);
   if (c.id) {
     await query(
-      `UPDATE menu_categories SET label = $3, sort_order = $4 WHERE id = $1 AND store_id = $2`,
-      [c.id, storeId, c.label, c.sort_order]
+      `UPDATE menu_categories SET label = $3, sort_order = $4, translations = $5::jsonb
+        WHERE id = $1 AND store_id = $2`,
+      [c.id, storeId, c.label, c.sort_order, tr]
     );
     return;
   }
   await query(
-    `INSERT INTO menu_categories (store_id, key, label, sort_order) VALUES ($1, $2, $3, $4)
-     ON CONFLICT (store_id, key) DO UPDATE SET label = EXCLUDED.label, sort_order = EXCLUDED.sort_order`,
-    [storeId, c.key, c.label, c.sort_order]
+    `INSERT INTO menu_categories (store_id, key, label, sort_order, translations) VALUES ($1, $2, $3, $4, $5::jsonb)
+     ON CONFLICT (store_id, key) DO UPDATE
+       SET label = EXCLUDED.label, sort_order = EXCLUDED.sort_order, translations = EXCLUDED.translations`,
+    [storeId, c.key, c.label, c.sort_order, tr]
   );
 }
 
@@ -84,6 +89,7 @@ export type MenuItemInput = {
   image_url: string | null;
   sort_order: number;
   is_available: boolean;
+  translations: Translations;
 };
 
 export async function upsertMenuItem(storeId: string, i: MenuItemInput): Promise<void> {
@@ -92,20 +98,21 @@ export async function upsertMenuItem(storeId: string, i: MenuItemInput): Promise
   if (!cat) throw new Error("Unknown category");
 
   const params = [storeId, i.category_id, i.name, i.description, i.price, i.price_note,
-                  i.image_url, i.sort_order, i.is_available];
+                  i.image_url, i.sort_order, i.is_available, JSON.stringify(i.translations)];
   if (i.id) {
     await query(
       `UPDATE menu_items
           SET category_id = $2, name = $3, description = $4, price = $5, price_note = $6,
-              image_url = $7, sort_order = $8, is_available = $9, updated_at = now()
-        WHERE id = $10 AND store_id = $1`,
+              image_url = $7, sort_order = $8, is_available = $9, translations = $10::jsonb,
+              updated_at = now()
+        WHERE id = $11 AND store_id = $1`,
       [...params, i.id]
     );
   } else {
     await query(
       `INSERT INTO menu_items (store_id, category_id, name, description, price, price_note,
-                               image_url, sort_order, is_available)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                               image_url, sort_order, is_available, translations)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)`,
       params
     );
   }

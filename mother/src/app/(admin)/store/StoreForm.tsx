@@ -4,26 +4,36 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminPost } from "@/lib/admin-fetch";
 import type { StoreProfile } from "@/lib/miniapp";
+import { TRANSLATABLE } from "@/lib/i18n";
+import TranslateButton from "../TranslateButton";
 
 const FIELDS: { key: keyof StoreProfile; label: string; placeholder?: string; multiline?: boolean; hint?: string }[] = [
   { key: "name", label: "Store name" },
-  { key: "tagline", label: "Tagline", placeholder: "Natural wine & small plates" },
-  { key: "concept", label: "Concept", multiline: true, placeholder: "A few sentences about the place." },
-  { key: "hours", label: "Hours", multiline: true, placeholder: "Tue–Sat 17:00–24:00\nClosed Mondays", hint: "One line per row, shown as written." },
-  { key: "access", label: "Access", placeholder: "3 min walk from … Station, exit 2" },
+  { key: "tagline", label: "Tagline", placeholder: "ワインと小皿料理" },
+  { key: "concept", label: "Concept", multiline: true, placeholder: "お店の紹介を数行で。" },
+  { key: "hours", label: "Hours", multiline: true, placeholder: "火〜土 17:00–24:00\n月曜定休", hint: "One line per row, shown as written." },
+  { key: "access", label: "Access", placeholder: "〇〇駅 2番出口から徒歩3分" },
   { key: "address", label: "Address" },
   { key: "map_url", label: "Map link", placeholder: "https://maps.app.goo.gl/…" },
   { key: "phone", label: "Phone", placeholder: "03-1234-5678" },
   { key: "hero_image_url", label: "Cover photo URL", placeholder: "https://…", hint: "Public https URL, or a photo bundled with the app (img/counter.jpg). Shown at the top of the home page." },
 ];
 
-export default function StoreForm({ store }: { store: StoreProfile }) {
+const EN_LABEL: Record<string, string> = {
+  tagline: "Tagline", concept: "Concept", hours: "Hours", access: "Access", address: "Address",
+};
+const MULTILINE = new Set(["concept", "hours"]);
+
+export default function StoreForm({ store, canTranslate }: { store: StoreProfile; canTranslate: boolean }) {
   const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(FIELDS.map((f) => [f.key, (store[f.key] as string | null) ?? ""]))
   );
   const [photos, setPhotos] = useState((store.photos ?? []).join("\n"));
   const [theme, setTheme] = useState(store.theme_color ?? "#7a1f3d");
+  const [english, setEnglish] = useState<Record<string, string>>(() =>
+    Object.fromEntries(TRANSLATABLE.store.map((k) => [k, store.translations?.en?.[k] ?? ""]))
+  );
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
@@ -35,6 +45,7 @@ export default function StoreForm({ store }: { store: StoreProfile }) {
     const res = await adminPost("/api/admin/store", {
       ...values,
       theme_color: theme,
+      translations: { en: english },
       photos: photos.split("\n").map((p) => p.trim()).filter(Boolean),
     });
     setBusy(false);
@@ -56,6 +67,30 @@ export default function StoreForm({ store }: { store: StoreProfile }) {
           {f.hint && <div className="hint">{f.hint}</div>}
         </div>
       ))}
+
+      <div className="i18n-block">
+        <div className="i18n-head">
+          <div>
+            <div className="card-title" style={{ margin: 0 }}>English version</div>
+            <div className="hint">Shown when a guest switches the Mini App to English. Empty fields show the Japanese text.</div>
+          </div>
+          <TranslateButton
+            enabled={canTranslate}
+            texts={Object.fromEntries(TRANSLATABLE.store.map((k) => [k, values[k] ?? ""]))}
+            onResult={(t) => setEnglish((prev) => ({ ...prev, ...t }))}
+          />
+        </div>
+        {TRANSLATABLE.store.map((k) => (
+          <div className="field" key={k}>
+            <label htmlFor={`en-${k}`}>{EN_LABEL[k]} <span className="muted">(English)</span></label>
+            {MULTILINE.has(k) ? (
+              <textarea id={`en-${k}`} value={english[k]} onChange={(e) => setEnglish({ ...english, [k]: e.target.value })} style={{ minHeight: 90 }} />
+            ) : (
+              <input id={`en-${k}`} value={english[k]} onChange={(e) => setEnglish({ ...english, [k]: e.target.value })} />
+            )}
+          </div>
+        ))}
+      </div>
 
       <div className="field">
         <label htmlFor="photos">Gallery photo URLs</label>
