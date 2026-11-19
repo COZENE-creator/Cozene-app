@@ -24,6 +24,21 @@ function sign(value: string): string {
   return crypto.createHmac("sha256", secret()).update(value).digest("base64url");
 }
 
+/**
+ * Signature for a link that acts without an admin login (e.g. the reservation
+ * reply link sent to staff on LINE). Only someone holding the link can use it.
+ */
+export function signLink(value: string): string {
+  return sign(`link:${value}`).slice(0, 32);
+}
+
+export function verifyLink(value: string, sig: string | null | undefined): boolean {
+  if (!sig) return false;
+  const expected = Buffer.from(signLink(value));
+  const given = Buffer.from(sig);
+  return expected.length === given.length && crypto.timingSafeEqual(expected, given);
+}
+
 /** Validate email+password against the configured allowlist/shared password. */
 export function checkCredentials(email: string, password: string): boolean {
   const emailOk = allowedEmails().includes(email.trim().toLowerCase());

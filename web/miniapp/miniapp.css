@@ -227,3 +227,28 @@ button { font: inherit; cursor: pointer; }
 .resv-status.confirmed { background: #e7f6ec; color: #1e7a3c; }
 .resv-status.declined { background: #fdecec; color: #b42318; }
 .resv-cancel { margin-top: 8px; border: 0; background: none; padding: 0; color: var(--muted); font-size: 13px; text-decoration: underline; }
+
+/* Reservation calendar: ○ available / △ few seats / × full / 休 closed */
+.rcal { margin-top: 6px; }
+.rcal-month { margin-bottom: 12px; }
+.rcal-title { font-weight: 700; color: var(--text); margin: 4px 0 6px; }
+.rcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.rcal-wd { text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); }
+.rcal-wd.sun { color: #c0392b; }
+.rcal-wd.sat { color: #2d6cdf; }
+.rcal-day { display: flex; flex-direction: column; align-items: center; padding: 5px 0 4px; border: 1px solid var(--border); border-radius: 10px; background: #fff; font: inherit; color: var(--text); }
+.rcal-day .n { font-size: 12px; font-weight: 600; }
+.rcal-day .m { font-size: 15px; font-weight: 800; line-height: 1.2; }
+.rcal-day.open .m { color: #1e7a3c; }
+.rcal-day.few .m { color: #b7791f; }
+.rcal-day.full, .rcal-day.closed { background: #f3f3f3; color: var(--muted); }
+.rcal-day.full .m { color: #b42318; }
+.rcal-day.closed .m { font-size: 12px; color: var(--muted); }
+.rcal-day.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+.rcal-legend { font-size: 12px; font-weight: 400; color: var(--muted); margin: 2px 0 0; }
+.rcal-legend .open { color: #1e7a3c; font-weight: 800; }
+.rcal-legend .few { color: #b7791f; font-weight: 800; margin-left: 6px; }
+.rcal-legend .full { color: #b42318; font-weight: 800; margin-left: 6px; }
+.resv-status.proposed { background: #fdf4e3; color: #b7791f; }
+.resv-proposal { margin-top: 8px; padding: 10px 12px; background: #fdf4e3; border-radius: 10px; font-size: 14px; }
+.resv-proposal .btn-primary { margin-top: 8px; padding: 11px; font-size: 15px; }

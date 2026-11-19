@@ -42,7 +42,10 @@
       tab_home: "ホーム", tab_menu: "メニュー", tab_reserve: "予約", tab_member: "会員証", lang_switch: "EN",
       today_picks: "本日のおすすめ",
       reserve_title: "ご予約",
-      reserve_lead: "ご希望の日時をお送りください。お店から確定のご連絡をLINEでお送りします。",
+      reserve_lead: "カレンダーから日付を選び、ご希望の時間と人数をお送りください。お店からLINEでご連絡します。",
+      cal_open: "空席あり", cal_few: "残りわずか", cal_full: "満席", cal_closed: "定休日",
+      weekdays: "日,月,火,水,木,金,土",
+      reserve_pick_date: "日付を選んでください。",
       reserve_date: "日付", reserve_time: "時間", reserve_party: "人数", reserve_name: "お名前",
       reserve_phone: "電話番号", reserve_note: "ご要望",
       reserve_send: "予約をリクエスト",
@@ -53,13 +56,20 @@
       reserve_mine: "あなたのご予約",
       reserve_party_more: (n) => n + "名以上はお電話でお問い合わせください",
       reserve_no_times: "この日は選べる時間がありません",
-      resv_requested: "確認中", resv_confirmed: "確定", resv_declined: "お受けできませんでした", resv_cancelled: "キャンセル済み",
+      resv_requested: "確認中", resv_proposed: "別の日時のご提案", resv_confirmed: "確定", resv_declined: "お受けできませんでした", resv_cancelled: "キャンセル済み",
+      resv_proposal: "ご提案の日時：{0}",
+      resv_accept: "この日時で予約する",
+      resv_accepted_toast: "ご予約が確定しました。",
+      resv_accept_confirm: "この日時で予約を確定しますか？",
       resv_cancel: "この予約をキャンセル",
       resv_cancel_confirm: "この予約をキャンセルしますか？",
       resv_cancelled_toast: "予約をキャンセルしました。",
       privacy_link: "プライバシーポリシー", privacy_read: "プライバシーポリシーを読む",
       err_reservations_closed: "現在ミニアプリでの予約は受け付けておりません。",
       err_invalid_date: "日付を選び直してください。",
+      err_date_full: "その日は満席です。別の日付を選んでください。",
+      err_outside_hours: "営業時間外のため、チェックインできません。",
+      err_not_acceptable: "このご提案は受け付けできなくなりました。",
       err_invalid_time: "時間を選び直してください。",
       err_invalid_party: "人数を選び直してください。",
       err_name_required: "お名前を入力してください。",
@@ -108,7 +118,7 @@
       checkin_needs_consent: "チェックインにはデータ利用への同意が必要です。",
       could_not_checkin: "チェックインできませんでした: {0}",
       checked_in: "チェックインしました。ご来店ありがとうございます！",
-      checkin_updated: "チェックイン情報を更新しました。",
+      checkin_updated: "本日はチェックイン済みです。テーブルと人数を更新しました。",
       welcome_gift: "ウェルカムギフト", enjoy: "どうぞお楽しみください！", confirmed_at: "{0} に確認しました",
       staff_pin: "スタッフPIN",
       pass_hint: "この画面をスタッフにお見せください。時計が動いていることが有効な画面の印です。",
@@ -129,7 +139,10 @@
       tab_home: "Home", tab_menu: "Menu", tab_reserve: "Book", tab_member: "Member", lang_switch: "日本語",
       today_picks: "Today's picks",
       reserve_title: "Reservation",
-      reserve_lead: "Send us your preferred date and time. The restaurant will confirm on LINE.",
+      reserve_lead: "Pick a date on the calendar and send us your preferred time and party size. The restaurant will reply on LINE.",
+      cal_open: "Available", cal_few: "Few seats", cal_full: "Full", cal_closed: "Closed",
+      weekdays: "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
+      reserve_pick_date: "Please pick a date.",
       reserve_date: "Date", reserve_time: "Time", reserve_party: "Party size", reserve_name: "Name",
       reserve_phone: "Phone", reserve_note: "Requests",
       reserve_send: "Request a table",
@@ -140,13 +153,20 @@
       reserve_mine: "Your reservations",
       reserve_party_more: (n) => "For " + n + " or more, please call",
       reserve_no_times: "No times left on this day",
-      resv_requested: "Waiting", resv_confirmed: "Confirmed", resv_declined: "Not available", resv_cancelled: "Cancelled",
+      resv_requested: "Waiting", resv_proposed: "Another time suggested", resv_confirmed: "Confirmed", resv_declined: "Not available", resv_cancelled: "Cancelled",
+      resv_proposal: "Suggested time: {0}",
+      resv_accept: "Book this time",
+      resv_accepted_toast: "Your reservation is confirmed.",
+      resv_accept_confirm: "Book this time?",
       resv_cancel: "Cancel this reservation",
       resv_cancel_confirm: "Cancel this reservation?",
       resv_cancelled_toast: "Reservation cancelled.",
       privacy_link: "Privacy policy", privacy_read: "Read the privacy policy",
       err_reservations_closed: "Online reservations are closed right now.",
       err_invalid_date: "Please choose the date again.",
+      err_date_full: "That day is full. Please choose another date.",
+      err_outside_hours: "Check-in is only possible during opening hours.",
+      err_not_acceptable: "This suggestion can no longer be accepted.",
       err_invalid_time: "Please choose the time again.",
       err_invalid_party: "Please choose the party size again.",
       err_name_required: "Please enter your name.",
@@ -195,7 +215,7 @@
       checkin_needs_consent: "Check-in needs your agreement to the data-use terms.",
       could_not_checkin: "Could not check in: {0}",
       checked_in: "Checked in. Welcome back!",
-      checkin_updated: "Check-in updated.",
+      checkin_updated: "You've already checked in today. Table and party size updated.",
       welcome_gift: "Welcome gift", enjoy: "Enjoy your glass!", confirmed_at: "Confirmed at {0}",
       staff_pin: "Staff PIN",
       pass_hint: "Show this screen to staff. The clock proves it is live.",
@@ -406,7 +426,6 @@
     document.querySelectorAll(".js-rewards-text").forEach((n) => (n.textContent = rewards));
     $("homeRewards").hidden = !rewards;
     $("memberRewards").hidden = !rewards;
-    $("consentFriend").hidden = !s.line_friend_url;
     document.querySelectorAll("#view-home .js-friend").forEach((n) => (n.hidden = !s.line_friend_url));
 
     const photos = $("storePhotos");
@@ -603,16 +622,50 @@
   const japanToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo" }).format(new Date());
   const japanNow = () => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" }).format(new Date());
 
-  function addDays(ymd, days) {
-    const d = new Date(ymd + "T00:00:00Z");
-    d.setUTCDate(d.getUTCDate() + days);
-    return d.toISOString().slice(0, 10);
-  }
-
   function reservationTime(iso) {
     const d = new Date(iso);
     const opts = { timeZone: "Asia/Tokyo", month: "short", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" };
     return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "ja-JP", opts).format(d);
+  }
+
+  const canBook = (d) => d.status === "open" || d.status === "few";
+  const MARK = { open: "○", few: "△", full: "×", closed: "休" };
+
+  /** ○ / △ / × calendar from the store's availability; tap a day to pick it. */
+  function renderCalendar() {
+    const box = $("rCal");
+    box.innerHTML = "";
+    const days = (state.booking && state.booking.calendar) || [];
+    const week = t("weekdays").split(",");
+    let month = null;
+    let grid = null;
+    days.forEach((d) => {
+      const key = d.date.slice(0, 7);
+      if (key !== month) {
+        month = key;
+        const [y, m] = key.split("-").map(Number);
+        const title = lang === "en"
+          ? new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+          : y + "年" + m + "月";
+        grid = el("div", { class: "rcal-grid" }, week.map((w, i) => el("div", { class: "rcal-wd" + (i === 0 ? " sun" : i === 6 ? " sat" : ""), text: w })));
+        for (let i = new Date(d.date + "T00:00:00Z").getUTCDay(); i > 0; i--) grid.append(el("div"));
+        box.append(el("div", { class: "rcal-month" }, [el("div", { class: "rcal-title", text: title }), grid]));
+      }
+      const label = t("cal_" + d.status);
+      const btn = el("button", {
+        type: "button",
+        class: "rcal-day " + d.status + (d.date === $("rDate").value ? " on" : ""),
+        "aria-label": d.date + " " + label,
+        title: label,
+        onclick: () => {
+          $("rDate").value = d.date;
+          renderCalendar();
+          fillTimes();
+        },
+      }, [el("span", { class: "n", text: String(Number(d.date.slice(8))) }), el("span", { class: "m", text: MARK[d.status] })]);
+      if (!canBook(d)) btn.disabled = true;
+      grid.append(btn);
+    });
   }
 
   /** Time choices for the picked date: today only shows times still ahead. */
@@ -632,10 +685,15 @@
   /** Set up the form from the store's booking hours. `keepValues` keeps what the guest typed. */
   function buildReserveForm(keepValues) {
     const b = state.booking;
-    const today = japanToday();
-    $("rDate").min = today;
-    $("rDate").max = addDays(today, b.days_ahead);
-    if (!keepValues || !$("rDate").value) $("rDate").value = today;
+    const days = b.calendar || [];
+    const picked = days.find((d) => d.date === $("rDate").value);
+    if (!keepValues || !picked || !canBook(picked)) {
+      // First bookable day that still has times left (today may be over).
+      const today = japanToday();
+      const first = days.find((d) => canBook(d) && (d.date !== today || b.times.some((x) => x > japanNow())));
+      $("rDate").value = first ? first.date : "";
+    }
+    renderCalendar();
     fillTimes();
     const party = $("rParty");
     const keep = party.value;
@@ -653,13 +711,22 @@
     if (!list.length) return;
     box.append(el("h2", { class: "section-title first", text: t("reserve_mine") }));
     list.forEach((r) => {
-      const canCancel = (r.status === "requested" || r.status === "confirmed") && new Date(r.reserved_for) > new Date();
+      const canCancel = ["requested", "proposed", "confirmed"].includes(r.status) && new Date(r.reserved_for) > new Date();
+      const proposal = r.status === "proposed"
+        ? el("div", { class: "resv-proposal" }, [
+            r.proposed_for ? el("div", { text: t("resv_proposal", reservationTime(r.proposed_for)) }) : null,
+            r.proposed_for && new Date(r.proposed_for) > new Date()
+              ? el("button", { class: "btn-primary", type: "button", text: t("resv_accept"), onclick: () => acceptProposal(r) })
+              : null,
+          ])
+        : null;
       box.append(el("div", { class: "resv" }, [
         el("div", { class: "resv-top" }, [
           el("span", { class: "resv-when", text: reservationTime(r.reserved_for) }),
           el("span", { class: "resv-status " + r.status, text: t("resv_" + r.status) }),
         ]),
         el("div", { class: "resv-sub", text: [t("party_n", r.party_size), r.name].join(" · ") + (r.staff_message ? "\n" + r.staff_message : "") }),
+        proposal,
         canCancel ? el("button", { class: "resv-cancel", type: "button", text: t("resv_cancel"), onclick: () => cancelReservation(r) }) : null,
       ]));
     });
@@ -689,6 +756,18 @@
     }
   }
 
+  async function acceptProposal(r) {
+    if (!window.confirm(t("resv_accept_confirm"))) return;
+    try {
+      const res = await api("/reservations", { action: "accept", id: r.id });
+      state.reservations = res.reservations;
+      renderReservations();
+      toast(t("resv_accepted_toast"));
+    } catch (err) {
+      toast(errText(err));
+    }
+  }
+
   async function cancelReservation(r) {
     if (!window.confirm(t("resv_cancel_confirm"))) return;
     try {
@@ -701,7 +780,6 @@
     }
   }
 
-  $("rDate").addEventListener("change", fillTimes);
 
   $("reserveForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -710,6 +788,7 @@
       $("reserveErr").hidden = false;
     };
     $("reserveErr").hidden = true;
+    if (!$("rDate").value) return showErr(t("reserve_pick_date"));
     if (!$("rTime").value) return showErr(t("err_invalid_time"));
     if (!$("rName").value.trim()) return showErr(t("err_name_required"));
     $("reserveGo").disabled = true;
@@ -766,6 +845,7 @@
     $("ciTitle").textContent = t("checkin_title", state.table);
     $("checkinGo").disabled = true;
     $("checkinErr").hidden = true;
+    $("checkinFriend").hidden = !state.store.line_friend_url || (state.me && state.me.guest.is_friend === true);
     $("checkinSheet").hidden = false;
   }
 
@@ -793,7 +873,10 @@
       else toast(t(res.is_new ? "checked_in" : "checkin_updated"));
       if (currentTab() === "member") renderMember(state.me);
     } catch (err) {
-      $("checkinErr").textContent = t("could_not_checkin", errText(err));
+      const hours = state.checkin && err.code === "outside_hours"
+        ? " (" + state.checkin.open + "–" + state.checkin.close + ")"
+        : "";
+      $("checkinErr").textContent = errText(err) + hours;
       $("checkinErr").hidden = false;
       $("checkinGo").disabled = false;
     }
@@ -910,6 +993,7 @@
       state.menu = data.menu;
       state.picks = data.recommendations || [];
       state.booking = data.reservation || null;
+      state.checkin = data.checkin || null;
       applyStaticText(); // fills {store} in the consent text
       renderStore(data.store);
       renderMenu(data.menu);

@@ -53,9 +53,15 @@
           <div id="myReservations"></div>
           <form id="reserveForm" class="form" novalidate>
             <p class="form-lead" data-i18n="reserve_lead"></p>
-            <label class="f"><span data-i18n="reserve_date">日付</span>
-              <input id="rDate" type="date" required />
-            </label>
+            <div class="f"><span data-i18n="reserve_date">日付</span>
+              <input id="rDate" type="hidden" />
+              <div id="rCal" class="rcal"></div>
+              <p class="rcal-legend">
+                <span class="open">○</span> <span data-i18n="cal_open">空席あり</span>
+                <span class="few">△</span> <span data-i18n="cal_few">残りわずか</span>
+                <span class="full">×</span> <span data-i18n="cal_full">満席</span>
+              </p>
+            </div>
             <label class="f"><span data-i18n="reserve_time">時間</span>
               <select id="rTime" required></select>
             </label>
@@ -150,10 +156,6 @@
         · <span data-i18n="policy_version"></span> <span id="policyVersion"></span>
       </p>
       <button id="consentAgree" class="btn-primary" disabled data-i18n="consent_agree">同意して続ける</button>
-      <div id="consentFriend" class="sheet-friend" hidden>
-        <p class="fineprint" data-i18n="friend_lead"></p>
-        <button class="btn-friend js-friend" type="button" data-i18n="add_friend">LINE友だち追加</button>
-      </div>
       <button id="consentCancel" class="btn-text" data-i18n="not_now">今はしない</button>
     </div>
   </div>
@@ -165,8 +167,12 @@
       <p class="sheet-lead" data-i18n="party_question">何名様でご来店ですか？</p>
       <div id="partyGrid" class="party-grid"></div>
       <button id="checkinGo" class="btn-primary" disabled data-i18n="check_in">チェックイン</button>
-      <button id="checkinCancel" class="btn-text" data-i18n="cancel">キャンセル</button>
       <p id="checkinErr" class="err" hidden></p>
+      <div id="checkinFriend" class="sheet-friend" hidden>
+        <p class="fineprint" data-i18n="friend_lead"></p>
+        <button class="btn-friend js-friend" type="button" data-i18n="add_friend">LINE友だち追加</button>
+      </div>
+      <button id="checkinCancel" class="btn-text" data-i18n="cancel">キャンセル</button>
     </div>
   </div>
 

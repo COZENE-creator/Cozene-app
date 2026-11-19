@@ -5,6 +5,8 @@ import { translateConfigured } from "@/lib/translate";
 import { getTr } from "@/lib/lang-server";
 import StoreForm from "./StoreForm";
 import PinForm from "./PinForm";
+import HoursForm from "./HoursForm";
+import { getBusinessHours } from "@/lib/business-hours";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,7 @@ export default async function StorePage() {
   if (!storeId || !store) {
     return <div className="card"><div className="empty"><div className="t">{tr("店舗が設定されていません", "No store configured")}</div><div>{tr("DEFAULT_STORE_SLUG を設定してください。", "Set DEFAULT_STORE_SLUG.")}</div></div></div>;
   }
-  const [pinSet, redemptions] = await Promise.all([hasStaffPin(storeId), listRedemptions(storeId)]);
+  const [pinSet, redemptions, hours] = await Promise.all([hasStaffPin(storeId), listRedemptions(storeId), getBusinessHours(storeId)]);
 
   return (
     <>
@@ -28,6 +30,11 @@ export default async function StorePage() {
 
       <div className="card pad">
         <StoreForm store={store} canTranslate={translateConfigured()} />
+      </div>
+
+      <h2>{tr("チェックインの受付時間", "Check-in hours")}</h2>
+      <div className="card pad">
+        <HoursForm hours={hours} />
       </div>
 
       <h2>{tr("スタッフPIN", "Staff PIN")}</h2>

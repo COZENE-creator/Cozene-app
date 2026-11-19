@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { getCustomer, getCustomerTimeline, getUserTagIds, listTags, getCustomerMiniApp } from "@/lib/queries";
 import { money, datetime } from "@/lib/format";
 import TagAssign from "./TagAssign";
-import { getTr } from "@/lib/lang-server";
+import { getTr, getLang } from "@/lib/lang-server";
+import { listCustomerReservations, formatReservationTime } from "@/lib/reservations";
+import { RESERVATION_STATUS } from "@/lib/reservation-labels";
+import ReservationHistory from "../../../ReservationHistory";
 import type { Tr } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
@@ -17,13 +20,15 @@ const KIND_LABEL: Record<string, { ja: string; en: string }> = {
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const tr = getTr();
+  const lang = getLang();
   const customer = await getCustomer(params.id);
   if (!customer) notFound();
-  const [timeline, allTags, assigned, miniapp] = await Promise.all([
+  const [timeline, allTags, assigned, miniapp, reservations] = await Promise.all([
     getCustomerTimeline(params.id),
     listTags(),
     getUserTagIds(params.id),
     getCustomerMiniApp(params.id),
+    listCustomerReservations(params.id),
   ]);
 
   return (
@@ -65,6 +70,31 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
               : miniapp.benefits.map((b) => `${b.title} (${datetime(b.redeemed_at)})`).join(", ")}
           </span>
         </div>
+      </div>
+
+      <h2>{tr("予約", "Reservations")}</h2>
+      <div className="card table-card">
+        <table>
+          <thead><tr><th>{tr("日時", "When")}</th><th className="num">{tr("人数", "Party")}</th><th>{tr("ステータス・やり取り", "Status & messages")}</th></tr></thead>
+          <tbody>
+            {reservations.length === 0 && (
+              <tr><td colSpan={3}><div className="empty"><div className="t">{tr("予約はありません", "No reservations")}</div></div></td></tr>
+            )}
+            {reservations.map((r) => {
+              const st = RESERVATION_STATUS[r.status];
+              return (
+                <tr key={r.id}>
+                  <td className="cell-strong" style={{ whiteSpace: "nowrap", verticalAlign: "top" }}>{formatReservationTime(r.reserved_for, lang)}</td>
+                  <td className="num" style={{ verticalAlign: "top" }}>{tr(`${r.party_size}名`, String(r.party_size))}</td>
+                  <td>
+                    <span className={`badge ${st?.badge ?? "neutral"}`}>{st ? tr(st.ja, st.en) : r.status}</span>
+                    <ReservationHistory events={r.events} tr={tr} lang={lang} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       <h2>{tr("タグ", "Tags")}</h2>

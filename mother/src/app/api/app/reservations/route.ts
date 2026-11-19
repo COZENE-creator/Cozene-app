@@ -1,6 +1,7 @@
 import { corsOptions, json, bad, authGuest, consentedMember, type GuestBody } from "@/lib/guest-api";
-import { createReservation, listGuestReservations, cancelByGuest } from "@/lib/reservations";
+import { createReservation, listGuestReservations, cancelByGuest, acceptProposal } from "@/lib/reservations";
 import { syncFriendship } from "@/lib/guests";
+import { publicBaseUrl } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const OPTIONS = corsOptions;
 
 type Body = GuestBody & {
-  action?: "list" | "create" | "cancel";
+  action?: "list" | "create" | "cancel" | "accept";
   id?: string;
   date?: string;
   time?: string;
@@ -25,8 +26,10 @@ type Body = GuestBody & {
  * POST /api/app/reservations
  *   {action: "list"}
  *   {action: "create", date: "2026-11-20", time: "18:30", party_size, name, phone?, note?, lang}
- *   {action: "cancel", id}
- * Always answers with the guest's current list. Errors are codes the app translates.
+ *   {action: "cancel", id}   cancel, or turn down a suggested time
+ *   {action: "accept", id}   book the time the staff suggested
+ * New requests, cancellations and accepted suggestions go to the staff LINE
+ * accounts chosen in Mother. Always answers with the guest's current list. Errors are codes the app translates.
  */
 export async function POST(req: Request) {
   const auth = await authGuest<Body>(req);
@@ -48,12 +51,15 @@ export async function POST(req: Request) {
       phone: typeof body.phone === "string" ? body.phone : null,
       note: typeof body.note === "string" ? body.note : null,
       lang: String(body.lang ?? "ja"),
+      baseUrl: publicBaseUrl(req),
     });
     if (!result.ok) return bad(result.error);
     // The confirmation goes out over LINE, which needs the guest to be a friend.
     await syncFriendship(member.userId, ctx.lineUserId);
   } else if (body.action === "cancel") {
-    if (!(await cancelByGuest(ctx.storeId, ctx.guestId, String(body.id ?? "")))) return bad("not_cancellable", 409);
+    if (!(await cancelByGuest(ctx.storeId, ctx.guestId, String(body.id ?? ""), publicBaseUrl(req)))) return bad("not_cancellable", 409);
+  } else if (body.action === "accept") {
+    if (!(await acceptProposal(ctx.storeId, ctx.guestId, String(body.id ?? ""), publicBaseUrl(req)))) return bad("not_acceptable", 409);
   } else if (body.action && body.action !== "list") {
     return bad("unknown action");
   }

@@ -19,3 +19,15 @@ export async function readJsonBody<T = unknown>(req: Request): Promise<T> {
   if (!text) throw new Error("Empty request body");
   return JSON.parse(text) as T;
 }
+
+/**
+ * This app's public origin for links in LINE messages: APP_BASE_URL
+ * (https://app.cozene.jp), else what the reverse proxy forwarded.
+ */
+export function publicBaseUrl(req: Request): string {
+  const env = process.env.APP_BASE_URL?.trim().replace(/\/+$/, "");
+  if (env) return env;
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto") || new URL(req.url).protocol.replace(":", "");
+  return host ? `${proto}://${host}` : new URL(req.url).origin;
+}

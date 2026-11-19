@@ -1,71 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { adminPost } from "@/lib/admin-fetch";
 import { useTr } from "../../LangProvider";
+import ReservationReplyForm from "../../ReservationReplyForm";
 
 /**
- * Confirm / decline buttons for one reservation. Each opens a small dialog for
- * an optional line added to the guest's LINE message.
+ * Reply buttons for one reservation. Each opens a dialog with the reply form
+ * (confirm / suggest another time / decline + a message for the guest's LINE).
  */
-export default function ReservationActions({ id, status }: { id: string; status: "requested" | "confirmed" }) {
-  const router = useRouter();
+export default function ReservationActions({
+  id,
+  status,
+  times,
+  requestedDay,
+}: {
+  id: string;
+  status: "requested" | "proposed" | "confirmed";
+  times: string[];
+  requestedDay: string;
+}) {
   const tr = useTr();
-  const [mode, setMode] = useState<"confirm" | "decline" | null>(null);
-  const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-
-  async function submit() {
-    if (!mode) return;
-    setBusy(true);
-    setErr("");
-    const res = await adminPost<{ notified: boolean }>("/api/admin/reservations", { action: mode, id, message });
-    setBusy(false);
-    if (!res.ok) return setErr(res.error ?? tr("保存できませんでした", "Could not save"));
-    setMode(null);
-    setMessage("");
-    router.refresh();
-  }
+  const [mode, setMode] = useState<"confirm" | "propose" | "decline" | null>(null);
 
   return (
     <>
-      {status === "requested" && (
+      {status !== "confirmed" && (
         <button className="btn btn-primary btn-sm" onClick={() => setMode("confirm")}>{tr("確定", "Confirm")}</button>
       )}{" "}
+      <button className="btn btn-secondary btn-sm" onClick={() => setMode("propose")}>{tr("別の日時", "Other time")}</button>{" "}
       <button className="btn btn-ghost btn-sm" onClick={() => setMode("decline")}>
-        {status === "requested" ? tr("お断り", "Decline") : tr("取り消す", "Cancel booking")}
+        {status === "confirmed" ? tr("取り消す", "Cancel booking") : tr("お断り", "Decline")}
       </button>
 
       {mode && (
         <div className="modal-backdrop" onClick={() => setMode(null)}>
           <div className="card pad modal" style={{ textAlign: "left", whiteSpace: "normal" }} onClick={(e) => e.stopPropagation()}>
-            <div className="card-title">
-              {mode === "confirm" ? tr("予約を確定します", "Confirm this reservation") : tr("予約をお断りします", "Decline this reservation")}
-            </div>
+            <div className="card-title">{tr("お客様に返信", "Reply to the guest")}</div>
             <p className="muted" style={{ marginTop: 0 }}>
-              {mode === "confirm"
-                ? tr("お客様にLINEで確定のお知らせが届きます。", "The guest gets a LINE message that the booking is confirmed.")
-                : tr("お客様にLINEでお断りのお知らせが届きます。", "The guest gets a LINE message that the booking can't be accepted.")}
+              {tr("お客様にLINEでお知らせが届きます（公式アカウントの友だちの場合）。", "The guest gets a LINE message (if they are a friend of the official account).")}
             </p>
-            <div className="field">
-              <label>{tr("お客様へのひとこと", "Message to the guest")} <span className="muted">{tr("（任意）", "(optional)")}</span></label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                style={{ minHeight: 70 }}
-                placeholder={mode === "confirm"
-                  ? tr("例：カウンター席をご用意しております。", "e.g. We've saved you seats at the counter.")
-                  : tr("例：あいにく満席です。19:30以降でしたらご案内できます。", "e.g. We're full then, but 19:30 or later is available.")}
-              />
-            </div>
-            {err && <div className="alert err">{err}</div>}
-            <div className="form-actions">
-              <button className={`btn ${mode === "confirm" ? "btn-primary" : "btn-danger"}`} onClick={submit} disabled={busy}>
-                {busy ? tr("送信中…", "Sending…") : mode === "confirm" ? tr("確定して通知", "Confirm and notify") : tr("お断りして通知", "Decline and notify")}
-              </button>
-              <button className="btn btn-ghost" onClick={() => setMode(null)}>{tr("キャンセル", "Cancel")}</button>
+            <ReservationReplyForm
+              endpoint="/api/admin/reservations"
+              payload={{ id }}
+              status={status}
+              times={times}
+              defaultDate={requestedDay}
+              initialAction={mode}
+              onDone={() => setMode(null)}
+            />
+            <div className="form-actions" style={{ marginTop: 8 }}>
+              <button className="btn btn-ghost" onClick={() => setMode(null)}>{tr("閉じる", "Close")}</button>
             </div>
           </div>
         </div>

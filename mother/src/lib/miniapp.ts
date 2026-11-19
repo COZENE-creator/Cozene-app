@@ -5,7 +5,7 @@ import { query, queryOne } from "./db";
  * card, and first-visit benefits. Route handlers stay thin and call these.
  */
 
-/** A re-scan within this window updates the same visit instead of counting a new one. */
+/** The member card shows a check-in from within this window as the visit in progress. */
 const VISIT_DEDUP_HOURS = 3;
 /** A first-visit benefit can be shown to staff for this long after that check-in. */
 const BENEFIT_WINDOW_HOURS = 6;
@@ -103,8 +103,9 @@ export type Visit = {
 };
 
 /**
- * Record a table check-in. Re-scanning the QR during the same evening (or
- * reopening the app) updates that visit rather than inflating the visit count.
+ * Record a table check-in: one per guest per business day. Re-scanning the QR
+ * the same day (or reopening the app) updates that visit's table and party
+ * size rather than counting another visit.
  */
 export async function checkIn(input: {
   storeId: string;
@@ -112,6 +113,8 @@ export async function checkIn(input: {
   lineUserId: string;
   tableNo: string | null;
   partySize: number | null;
+  /** Start of the current business day (see business-hours.ts). */
+  dayStart: Date;
   raw: unknown;
 }): Promise<{ visit: Visit; isNew: boolean }> {
   const recent = await queryOne<Visit>(
@@ -121,10 +124,11 @@ export async function checkIn(input: {
       WHERE visit_id = (
               SELECT visit_id FROM visits
                WHERE store_id = $1 AND user_id = $2
-                 AND checked_in_at > now() - make_interval(hours => $5)
+                 AND checked_in_at >= $5::timestamptz
+                 AND checked_in_at < $5::timestamptz + interval '1 day'
                ORDER BY checked_in_at DESC LIMIT 1)
       RETURNING visit_id, checked_in_at, table_no, party_size`,
-    [input.storeId, input.userId, input.tableNo, input.partySize, VISIT_DEDUP_HOURS]
+    [input.storeId, input.userId, input.tableNo, input.partySize, input.dayStart.toISOString()]
   );
   if (recent) return { visit: recent, isNew: false };
 
