@@ -1,6 +1,7 @@
 import { listTags } from "@/lib/queries";
 import { listSpecialsWithResults } from "@/lib/specials";
 import ComposeForm from "./ComposeForm";
+import { getTr } from "@/lib/lang-server";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export default async function ComposePage({
 }: {
   searchParams: { special?: string };
 }) {
+  const tr = getTr();
   const [tags, specials] = await Promise.all([listTags(), listSpecialsWithResults()]);
 
   // Only specials that actually have feedback can be used as an audience.
@@ -18,8 +20,8 @@ export default async function ComposePage({
     <>
       <div className="page-head">
         <div className="titles">
-          <h1>Compose push</h1>
-          <p className="sub">Send a LINE message now. Delivery is recorded per recipient.</p>
+          <h1>{tr("LINEメッセージ作成", "Compose push")}</h1>
+          <p className="sub">{tr("LINEメッセージを今すぐ送信します。配信結果は宛先ごとに記録されます。", "Send a LINE message now. Delivery is recorded per recipient.")}</p>
         </div>
       </div>
       <ComposeForm

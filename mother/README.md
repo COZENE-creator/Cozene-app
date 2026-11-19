@@ -61,10 +61,11 @@ Point the LIFF client at this app: in `../web/config.js` set
 | `SQUARE_WEBHOOK_URL` | exact public webhook URL (part of the signed payload) |
 | `SQUARE_ENVIRONMENT` | `sandbox` or `production` |
 | `ADMIN_EMAILS`, `ADMIN_PASSWORD` | admin login allowlist + shared password |
-| `ADMIN_SESSION_SECRET` | signs the session cookie |
+| `ADMIN_SESSION_SECRET` | signs the session cookie and the staff reservation reply links |
+| `APP_BASE_URL` | public origin for links in staff LINE messages, e.g. `https://app.cozene.jp` (falls back to the request host) |
 | `DEFAULT_STORE_SLUG` | store used for single-store webhook/push resolution, and the store the admin console edits |
 | `LINE_LOGIN_CHANNEL_IDS` | Mini App: channel ids allowed as ID-token `aud` (comma-separated) |
-| `MINIAPP_LIFF_ID` | Mini App LIFF id, prefills the Table QR page |
+| `MINIAPP_LIFF_ID` | Mini App LIFF id, prefills the Table QR page and the Mini App link in guest reservation messages |
 | `CONSENT_POLICY_VERSION` | bump when the consent wording changes → guests re-consent |
 | `LINE_ID_TOKEN_DEV` | `1` = accept `dev:<userId>` tokens for local testing. **Never in production.** |
 
@@ -81,11 +82,29 @@ One Mini App serves every store. The QR on each table opens
 | Check-in: table (from QR), party size, timestamp | yes | `POST /api/app/checkin` → `visits` |
 | First-visit free glass, staff confirm with PIN, once per guest | yes | `POST /api/app/redeem` → `benefit_redemptions` |
 | Member card: visit count | yes | `POST /api/app/me` |
+| 本日のおすすめ (top of the Menu tab): today-only or until removed | no | `GET /api/app/store` ← Mother **本日のおすすめ** |
+| 予約 tab: ○/△/× availability calendar (staff set it in Mother **予約**); request (date, time, party, name, phone, note) | yes | `POST /api/app/reservations` |
+| New requests → LINE message to the staff accounts chosen in **予約 → 予約の受付設定**, with a reply link (`/r/<id>?u=&t=`, no login) to confirm / suggest another time / decline from a phone. The guest gets each reply on LINE and can book a suggested time in one tap. Every step → `reservation_events`, shown on **予約** and the customer page | yes | `/api/reservations/reply`, `/api/admin/reservations` |
+| Check-in: only during opening hours (**店舗情報 → チェックインの受付時間**), once per guest per business day (days change at 05:00); a re-scan the same day updates table/party | yes | `POST /api/app/checkin` (error `outside_hours`) |
+| Member rewards (free text, e.g. "1st visit: a glass of wine, 3rd visit: special glass") on home + member card | no | `GET /api/app/store` ← Mother **Store** → 会員特典 |
+| LINE 友だち追加 button on home, check-in sheet and member card (hidden there once the guest is a friend) | no | Mother **Store** → LINE友だち追加リンク |
+| Privacy policy (`../privacy.html`) | no | `GET /privacy` — linked from the consent sheet and member page |
 
 **Identity.** The client sends `liff.getIDToken()`, never a bare userId; the server verifies it
 with LINE (`src/lib/line-login.ts`). All stores live under one LINE provider, so the userId is
 the same person everywhere → `guests` (cross-store) ← `users.guest_id` (per store). Nothing is
 recorded against a store until the guest agrees to store data use.
+
+**Languages.** Both apps are Japanese by default with an English switch. Mother: 日本語 / EN in
+the sidebar and on the login page (cookie `cz_lang`); text sits next to where it is used as
+`tr("顧客", "Customers")` — `getTr()` (`src/lib/lang-server.ts`) in server components and route
+handlers, `useTr()` (`src/app/LangProvider.tsx`) in client components. Mini App: guests switch to English in the tab bar (remembered per
+phone). Interface text is in `../web/miniapp/miniapp.js` (`STRINGS`). Store, menu and benefit
+text: the regular columns hold Japanese, English sits in each row's `translations` jsonb
+(`../db/migrations/0004_i18n.sql`) and falls back to Japanese when missing. Mother → Store / Menu
+have English fields and an **Auto-translate from Japanese** button (`/api/admin/translate`,
+Claude API) that is enabled when `ANTHROPIC_API_KEY` is set. To add a language: add it to
+`LANGUAGES` in `src/lib/i18n.ts` and a `STRINGS` block in `miniapp.js`.
 
 **Rules.** Re-scanning within 3 h updates the same visit (no inflated visit counts). The free
 glass is available during the guest's first visit at that store (6 h window) and can be
@@ -109,6 +128,18 @@ currently edits the `DEFAULT_STORE_SLUG` store — a store switcher is the next 
 **Local test without LINE.** Run Mother with `LINE_ID_TOKEN_DEV=1`, set `DEV_USER_ID` in
 `../web/config.js`, serve `../web` (`../scripts/dev.sh --no-tunnel`) and open
 `http://localhost:8080/miniapp/?store=cozene-base&table=1`.
+
+## Backups
+
+`scripts/backup-db.sh` dumps the PostgreSQL database (`DATABASE_URL` in `.env.local`) to
+`~/backups/cozene-YYYYMMDD-HHMM.sql.gz`, keeps 14 days, and also copies each dump to S3 when
+`BACKUP_S3_URI` is set. Run it daily from cron:
+
+```
+0 4 * * * /home/ubuntu/cozene/scripts/backup-db.sh >> /home/ubuntu/backups/backup.log 2>&1
+```
+
+Restore steps are in the script header.
 
 ## Register the webhooks
 

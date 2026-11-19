@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
+import { useTr } from "../../LangProvider";
 
 declare global {
   interface Window {
@@ -25,6 +26,7 @@ function parseTables(spec: string): string[] {
 }
 
 export default function TableQr({ liffId: initialLiff, storeSlug, storeName }: { liffId: string; storeSlug: string; storeName: string }) {
+  const tr = useTr();
   const [liffId, setLiffId] = useState(initialLiff);
   const [spec, setSpec] = useState("1-10");
   const [ready, setReady] = useState(false);
@@ -44,32 +46,32 @@ export default function TableQr({ liffId: initialLiff, storeSlug, storeName }: {
       <div className="card pad no-print" style={{ marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div className="field">
-            <label htmlFor="liff">Mini App LIFF ID</label>
+            <label htmlFor="liff">{tr("ミニアプリの LIFF ID", "Mini App LIFF ID")}</label>
             <input id="liff" value={liffId} onChange={(e) => setLiffId(e.target.value)} placeholder="1234567890-abcdEFGH" />
-            <div className="hint">From LINE Developers → Mini App channel. Set MINIAPP_LIFF_ID to prefill.</div>
+            <div className="hint">{tr("LINE Developers → ミニアプリのチャネルで確認できます。MINIAPP_LIFF_ID を設定すると自動で入力されます。", "From LINE Developers → Mini App channel. Set MINIAPP_LIFF_ID to prefill.")}</div>
           </div>
           <div className="field">
-            <label htmlFor="tables">Tables</label>
-            <input id="tables" value={spec} onChange={(e) => setSpec(e.target.value)} placeholder="1-12, Counter, Terrace" />
-            <div className="hint">Ranges and names, comma-separated.</div>
+            <label htmlFor="tables">{tr("テーブル", "Tables")}</label>
+            <input id="tables" value={spec} onChange={(e) => setSpec(e.target.value)} placeholder={tr("1-12, カウンター, テラス", "1-12, Counter, Terrace")} />
+            <div className="hint">{tr("番号の範囲や名前をカンマ区切りで入力します。", "Ranges and names, comma-separated.")}</div>
           </div>
         </div>
         <div className="form-actions" style={{ marginTop: 4 }}>
-          <button className="btn btn-primary" onClick={() => window.print()} disabled={!liffId.trim() || tables.length === 0}>Print</button>
+          <button className="btn btn-primary" onClick={() => window.print()} disabled={!liffId.trim() || tables.length === 0}>{tr("印刷", "Print")}</button>
           {tables[0] && liffId.trim() && <span className="muted mono" style={{ overflowWrap: "anywhere" }}>{urlFor(tables[0])}</span>}
         </div>
       </div>
 
       {!liffId.trim() ? (
-        <div className="card"><div className="empty"><div className="t">Enter the Mini App LIFF ID</div></div></div>
+        <div className="card"><div className="empty"><div className="t">{tr("ミニアプリの LIFF ID を入力してください", "Enter the Mini App LIFF ID")}</div></div></div>
       ) : (
         <div className="qr-grid">
           {tables.map((t) => (
             <div className="qr-tile" key={t}>
               <div className="qr-store">{storeName}</div>
-              <div className="qr-table">Table {t}</div>
+              <div className="qr-table">テーブル {t} / Table {t}</div>
               <Qr text={urlFor(t)} ready={ready} />
-              <div className="qr-cta">Scan with LINE to check in</div>
+              <div className="qr-cta">LINEで読み取ってチェックイン / Scan with LINE to check in</div>
             </div>
           ))}
         </div>

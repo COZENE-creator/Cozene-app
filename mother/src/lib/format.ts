@@ -14,5 +14,6 @@ export function datetime(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return String(iso);
-  return d.toLocaleString("ja-JP", { dateStyle: "medium", timeStyle: "short" });
+  // Japan time, whatever timezone the server runs in (EC2 is UTC).
+  return d.toLocaleString("ja-JP", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tokyo" });
 }

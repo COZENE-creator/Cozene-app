@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconSend } from "../../../icons";
 import { buildMessage, RATING_LABEL, RATINGS, type Rating } from "@/lib/special-copy";
+import { useLang, useTr } from "../../../LangProvider";
 
 type Tag = { id: string; label: string; usage: number };
 type SpecialResult = {
@@ -29,11 +30,13 @@ export default function ComposeForm({
   initialSpecialId?: string | null;
 }) {
   const router = useRouter();
+  const lang = useLang();
+  const tr = useTr();
 
   // Arriving from "Message raters" on the Specials page preselects that week.
   const preselected = specials.find((s) => s.id === initialSpecialId) ?? null;
 
-  const [title, setTitle] = useState(preselected ? `${preselected.title} follow-up` : "");
+  const [title, setTitle] = useState(preselected ? tr(`${preselected.title} フォローアップ`, `${preselected.title} follow-up`) : "");
   const [body, setBody] = useState("");
   const [audienceType, setAudienceType] = useState<AudienceType>(preselected ? "rating" : "all");
   const [tagIds, setTagIds] = useState<string[]>([]);
@@ -57,7 +60,7 @@ export default function ComposeForm({
   /** Turn the week's result into draft copy — editable before sending. */
   function generateFromResult() {
     if (!special) return;
-    setBody(buildMessage(special, ratings));
+    setBody(buildMessage(special, ratings, lang));
   }
 
   function audienceSpec() {
@@ -87,12 +90,15 @@ export default function ComposeForm({
       }
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) {
-        setMsg({ kind: "err", text: data?.error || `Send failed (HTTP ${res.status})` });
+        setMsg({ kind: "err", text: data?.error || tr(`送信に失敗しました（HTTP ${res.status}）`, `Send failed (HTTP ${res.status})`) });
         return;
       }
       setMsg({
         kind: "ok",
-        text: `Sent to ${data.sent}/${data.recipients} (failed: ${data.failed}). Redirecting…`,
+        text: tr(
+          `${data.recipients}件中${data.sent}件を送信しました（失敗：${data.failed}件）。移動しています…`,
+          `Sent to ${data.sent}/${data.recipients} (failed: ${data.failed}). Redirecting…`,
+        ),
       });
       setTimeout(() => router.push(`/push/${data.campaignId}`), 900);
     } catch (err) {
@@ -113,36 +119,37 @@ export default function ComposeForm({
       <form className="card pad" onSubmit={submit}>
         <div className="field">
           <label htmlFor="title">
-            Campaign title <span className="muted">(internal only)</span>
+            {tr("配信タイトル", "Campaign title")} <span className="muted">{tr("（管理用）", "(internal only)")}</span>
           </label>
           <input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Weekend special"
+            placeholder={tr("例：週末のおすすめ", "e.g. Weekend special")}
           />
         </div>
 
         <div className="field">
-          <label htmlFor="audience">Audience</label>
+          <label htmlFor="audience">{tr("配信対象", "Audience")}</label>
           <select
             id="audience"
             value={audienceType}
             onChange={(e) => setAudienceType(e.target.value as AudienceType)}
           >
-            <option value="all">All friends</option>
-            <option value="tag">By tag</option>
+            <option value="all">{tr("すべての友だち", "All friends")}</option>
+            <option value="tag">{tr("タグで選ぶ", "By tag")}</option>
             <option value="rating" disabled={specials.length === 0}>
-              By weekly special rating{specials.length === 0 ? " (no ratings yet)" : ""}
+              {tr("今週のおすすめの評価で選ぶ", "By weekly special rating")}
+              {specials.length === 0 ? tr("（評価はまだありません）", " (no ratings yet)") : ""}
             </option>
           </select>
         </div>
 
         {audienceType === "tag" && (
           <div className="field">
-            <label>Select tags</label>
+            <label>{tr("タグを選択", "Select tags")}</label>
             {tags.length === 0 && (
-              <div className="muted">No tags yet. Create some on the Tags page.</div>
+              <div className="muted">{tr("タグがまだありません。タグページで作成してください。", "No tags yet. Create some on the Tags page.")}</div>
             )}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {tags.map((t) => (
@@ -162,18 +169,18 @@ export default function ComposeForm({
         {audienceType === "rating" && (
           <>
             <div className="field">
-              <label htmlFor="special">Weekly special</label>
+              <label htmlFor="special">{tr("今週のおすすめ", "Weekly special")}</label>
               <select id="special" value={specialId} onChange={(e) => setSpecialId(e.target.value)}>
                 {specials.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.week_start} — {s.title} ({s.responses} responses)
+                    {s.week_start} — {s.title} {tr(`（回答${s.responses}件）`, `(${s.responses} responses)`)}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="field">
-              <label>Who rated it</label>
+              <label>{tr("評価したお客様", "Who rated it")}</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {RATINGS.map((r) => (
                   <button
@@ -182,35 +189,38 @@ export default function ComposeForm({
                     className={`chip-toggle ${ratings.includes(r) ? "on" : ""}`}
                     onClick={() => toggleRating(r)}
                   >
-                    {RATING_LABEL[r]} <span className="muted">· {countFor(r)}</span>
+                    {tr(RATING_LABEL[r].ja, RATING_LABEL[r].en)} <span className="muted">· {countFor(r)}</span>
                   </button>
                 ))}
               </div>
               <div className="hint">
                 {ratings.length === 0
-                  ? "Pick at least one rating."
-                  : `${reach} guest${reach === 1 ? "" : "s"} rated this way (friends only will receive it).`}
+                  ? tr("評価を1つ以上選んでください。", "Pick at least one rating.")
+                  : tr(
+                      `${reach}人のお客様がこの評価をしました（友だちのみに送信されます）。`,
+                      `${reach} guest${reach === 1 ? "" : "s"} rated this way (friends only will receive it).`,
+                    )}
               </div>
             </div>
           </>
         )}
 
         <div className="field">
-          <label htmlFor="body">Message</label>
+          <label htmlFor="body">{tr("メッセージ", "Message")}</label>
           <textarea
             id="body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="The text your customers receive on LINE…"
+            placeholder={tr("お客様のLINEに届くメッセージ…", "The text your customers receive on LINE…")}
           />
           <div
             className="hint"
             style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}
           >
-            <span>{body.length} characters</span>
+            <span>{tr(`${body.length}文字`, `${body.length} characters`)}</span>
             {audienceType === "rating" && special && (
               <button type="button" className="btn btn-secondary btn-sm" onClick={generateFromResult}>
-                Draft from result
+                {tr("結果から下書きを作成", "Draft from result")}
               </button>
             )}
           </div>
@@ -218,7 +228,7 @@ export default function ComposeForm({
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={!canSend}>
-            <IconSend /> {busy ? "Sending…" : "Send now"}
+            <IconSend /> {busy ? tr("送信中…", "Sending…") : tr("今すぐ送信", "Send now")}
           </button>
           {msg && (
             <span className={msg.kind === "ok" ? "alert ok" : "alert err"} style={{ marginTop: 0 }}>
@@ -229,16 +239,16 @@ export default function ComposeForm({
       </form>
 
       <div className="card pad">
-        <div className="card-title">Preview</div>
+        <div className="card-title">{tr("プレビュー", "Preview")}</div>
         <div className="chat" style={{ minHeight: 160 }}>
           <div className="chat-row">
             <div className="chat-av">C</div>
             <div className="chat-msg">
-              {body || <span style={{ color: "#aaa" }}>Your message appears here…</span>}
+              {body || <span style={{ color: "#aaa" }}>{tr("ここにメッセージが表示されます…", "Your message appears here…")}</span>}
             </div>
           </div>
         </div>
-        <div className="hint">Rendered as a LINE text message from your Official Account.</div>
+        <div className="hint">{tr("LINE公式アカウントからのテキストメッセージとして表示されます。", "Rendered as a LINE text message from your Official Account.")}</div>
 
         {audienceType === "rating" && special && (
           <>
@@ -246,15 +256,15 @@ export default function ComposeForm({
               {special.title}
             </div>
             <div className="kv">
-              <span className="k">Good</span>
+              <span className="k">{tr("良い", "Good")}</span>
               <span className="v ok">{special.good}</span>
             </div>
             <div className="kv">
-              <span className="k">OK</span>
+              <span className="k">{tr("普通", "OK")}</span>
               <span className="v">{special.ok}</span>
             </div>
             <div className="kv">
-              <span className="k">Not good</span>
+              <span className="k">{tr("いまいち", "Not good")}</span>
               <span className="v bad">{special.bad}</span>
             </div>
           </>

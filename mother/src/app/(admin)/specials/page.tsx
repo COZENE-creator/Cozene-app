@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { listSpecialsWithResults, weekStart } from "@/lib/specials";
 import SpecialForm from "./SpecialForm";
+import { getTr } from "@/lib/lang-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function SpecialsPage() {
   const specials = await listSpecialsWithResults();
+  const tr = getTr();
   const thisWeek = weekStart(new Date());
   const current = specials.find((s) => s.week_start === thisWeek) ?? null;
 
@@ -13,25 +15,27 @@ export default async function SpecialsPage() {
     <>
       <div className="page-head">
         <div className="titles">
-          <h1>Weekly special</h1>
+          <h1>{tr("今週のおすすめ", "Weekly special")}</h1>
           <p className="sub">
-            Guests rate the week&apos;s dish on the screen shown after payment. Use the result to
-            target follow-up messages.
+            {tr(
+              "お会計後に表示される画面で、お客様に今週の料理を評価していただきます。結果をもとにフォローメッセージの配信対象を選べます。",
+              "Guests rate the week's dish on the screen shown after payment. Use the result to target follow-up messages.",
+            )}
           </p>
         </div>
       </div>
 
-      <h2>{current ? "This week" : "Set this week's special"}</h2>
+      <h2>{current ? tr("今週", "This week") : tr("今週のおすすめを設定", "Set this week's special")}</h2>
       <div className="card pad">
         <SpecialForm weekStart={thisWeek} existing={current} />
       </div>
 
-      <h2>Results</h2>
+      <h2>{tr("結果", "Results")}</h2>
       {specials.length === 0 ? (
         <div className="card">
           <div className="empty">
-            <div className="t">No specials yet</div>
-            <div>Set this week&apos;s dish above to start collecting ratings.</div>
+            <div className="t">{tr("おすすめはまだありません", "No specials yet")}</div>
+            <div>{tr("上で今週の料理を設定すると、評価の収集が始まります。", "Set this week's dish above to start collecting ratings.")}</div>
           </div>
         </div>
       ) : (
@@ -39,13 +43,13 @@ export default async function SpecialsPage() {
           <table>
             <thead>
               <tr>
-                <th>Week</th>
-                <th>Dish</th>
-                <th className="num">Good</th>
-                <th className="num">OK</th>
-                <th className="num">Not good</th>
-                <th className="num">Responses</th>
-                <th>Rating</th>
+                <th>{tr("週", "Week")}</th>
+                <th>{tr("料理", "Dish")}</th>
+                <th className="num">{tr("良い", "Good")}</th>
+                <th className="num">{tr("普通", "OK")}</th>
+                <th className="num">{tr("いまいち", "Not good")}</th>
+                <th className="num">{tr("回答", "Responses")}</th>
+                <th>{tr("評価", "Rating")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -72,7 +76,7 @@ export default async function SpecialsPage() {
                   <td className="num">{s.responses}</td>
                   <td>
                     {s.responses === 0 ? (
-                      <span className="muted">No responses</span>
+                      <span className="muted">{tr("回答なし", "No responses")}</span>
                     ) : (
                       <RatingBar good={s.good} ok={s.ok} bad={s.bad} score={s.score} />
                     )}
@@ -80,7 +84,7 @@ export default async function SpecialsPage() {
                   <td className="num">
                     {s.responses > 0 && (
                       <Link className="btn btn-secondary btn-sm" href={`/push/new?special=${s.id}`}>
-                        Message raters
+                        {tr("評価者にメッセージ", "Message raters")}
                       </Link>
                     )}
                   </td>
@@ -105,6 +109,7 @@ function RatingBar({
   bad: number;
   score: number | null;
 }) {
+  const tr = getTr();
   const total = good + ok + bad || 1;
   const pct = (n: number) => `${(100 * n) / total}%`;
   return (
@@ -114,7 +119,7 @@ function RatingBar({
         <div style={{ width: pct(ok), background: "var(--warn)" }} />
         <div className="seg-bad" style={{ width: pct(bad) }} />
       </div>
-      <span className="muted">{score}% Good</span>
+      <span className="muted">{tr(`「良い」${score}%`, `${score}% Good`)}</span>
     </div>
   );
 }

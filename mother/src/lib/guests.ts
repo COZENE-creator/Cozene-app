@@ -11,7 +11,7 @@ import { checkFriendship } from "./line";
  */
 
 /** Bump when the consent wording changes; guests are asked again. */
-export const POLICY_VERSION = process.env.CONSENT_POLICY_VERSION || "2026-10";
+export const POLICY_VERSION = process.env.CONSENT_POLICY_VERSION || "2026-11-19";
 
 export type ConsentScope = "store_use" | "partner_sharing";
 

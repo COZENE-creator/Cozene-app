@@ -59,22 +59,26 @@ export function getCustomer(id: string): Promise<CustomerDetail | null> {
 export type TimelineEvent = {
   kind: "visit" | "order" | "payment";
   at: string;
+  /** id source for visits; order state / payment status otherwise. */
   detail: string;
   amount: number | null;
+  /** Visits only. */
+  table_no: string | null;
+  party_size: number | null;
 };
 
 /** Unified visit/order/payment timeline for one customer. */
 export function getCustomerTimeline(id: string): Promise<TimelineEvent[]> {
   return query<TimelineEvent>(
     `SELECT 'visit'::text AS kind, checked_in_at AS at,
-            concat_ws(' · ', id_source, 'Table ' || table_no, party_size || ' guests') AS detail,
-            NULL::bigint AS amount
+            id_source AS detail, NULL::bigint AS amount,
+            table_no, party_size
        FROM visits WHERE user_id = $1
      UNION ALL
-     SELECT 'order', COALESCE(ordered_at, created_at), COALESCE(state, source), total_amount
+     SELECT 'order', COALESCE(ordered_at, created_at), COALESCE(state, source), total_amount, NULL, NULL
        FROM orders WHERE user_id = $1
      UNION ALL
-     SELECT 'payment', COALESCE(paid_at, created_at), COALESCE(status, ''), amount
+     SELECT 'payment', COALESCE(paid_at, created_at), COALESCE(status, ''), amount, NULL, NULL
        FROM payments WHERE user_id = $1
      ORDER BY at DESC
      LIMIT 200`,

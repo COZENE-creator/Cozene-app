@@ -387,6 +387,29 @@ person at every store.
 | `benefits` | per-store offers; `first_visit_glass` with `rule='first_visit'` |
 | `benefit_redemptions` | one per guest per benefit — `UNIQUE (benefit_id, guest_id)` makes "once per guest" a DB guarantee; links the `visit_id` it was used on |
 
+**本日のおすすめ and reservations (`0005_recommendations_reservations.sql`).** `recommendations`:
+free-form dishes for the top of the Mini App menu; `show_date` = that day only (Japan time), NULL =
+until removed. `reservations`: a guest's request (`reserved_for`, `party_size`, `name`, `phone`,
+`note`, `lang`), `status` requested → confirmed / declined / cancelled, with the LINE reply result
+in `notified` / `notify_error`. `stores.reservation_settings` holds the booking hours.
+
+**Check-in hours, availability, reservation history (`0007_checkin_hours_availability.sql`).**
+`stores.business_hours` = `{limit_checkin, open, close, closed_days}`: check-in only while open,
+once per guest per business day. `reservation_availability` (`store_id`, `day`, `status` open ○ /
+few △ / full ×) is the calendar staff set by hand; no row = open (closed weekdays = 休).
+`reservations.status` adds `proposed` (staff suggested `proposed_for`). `reservation_events` keeps
+every step — guest `requested` / `cancelled` / `accepted`, staff `confirmed` / `proposed` /
+`declined` with `staff_name`, `message` and the LINE delivery result.
+
+**Rewards text and add-friend link (`0006_rewards_friend.sql`).** `stores.rewards_text`: free text
+describing member rewards (e.g. visit 1 → a glass of wine, visit 3 → a special glass), shown on the
+Mini App home and member card. `stores.line_friend_url`: the Official Account's add-friend link,
+shown as a 友だち追加 button.
+
+**Languages (`0004_i18n.sql`).** The text columns of `stores` (incl. `rewards_text`), `menu_categories`, `menu_items`
+and `benefits` hold the default language (Japanese). Each of those tables has
+`translations jsonb` = `{"en": {"<column>": "…"}}`; a missing field falls back to the column.
+
 ## How data flows in
 
 | Trigger | Endpoint | Writes |

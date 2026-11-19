@@ -12,6 +12,7 @@
     "db:seed": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f ../db/seed.sql"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
     "@electric-sql/pglite": "^0.5.4",
     "next": "14.2.35",
     "pg": "^8.12.0",
