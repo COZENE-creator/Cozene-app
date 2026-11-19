@@ -25,10 +25,11 @@ export async function POST(req: Request) {
   }
 
   const userId = await ensureStoreMember(ctx.storeId, ctx.guestId, ctx.lineUserId, ctx.displayName);
-  const [member, benefits] = await Promise.all([
+  const [member, benefits, isFriend] = await Promise.all([
     getMemberSummary(ctx.storeId, userId),
     getBenefits(ctx.storeId, ctx.guestId, userId),
     syncFriendship(userId, ctx.lineUserId),
   ]);
-  return json(200, { ok: true, guest, consent, policy_version: POLICY_VERSION, member, benefits });
+  // is_friend: null when LINE can't be asked (no channel token).
+  return json(200, { ok: true, guest: { ...guest, is_friend: isFriend }, consent, policy_version: POLICY_VERSION, member, benefits });
 }

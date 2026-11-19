@@ -25,6 +25,8 @@ export type StoreProfileInput = {
   hero_image_url: string | null;
   photos: string[];
   theme_color: string | null;
+  rewards_text: string | null;
+  line_friend_url: string | null;
   translations: Translations;
 };
 
@@ -33,10 +35,11 @@ export async function updateStoreProfile(storeId: string, p: StoreProfileInput):
     `UPDATE stores
         SET name = $2, tagline = $3, concept = $4, hours = $5, address = $6, access = $7,
             phone = $8, map_url = $9, hero_image_url = $10, photos = $11::jsonb, theme_color = $12,
-            translations = $13::jsonb, updated_at = now()
+            translations = $13::jsonb, rewards_text = $14, line_friend_url = $15, updated_at = now()
       WHERE id = $1`,
     [storeId, p.name, p.tagline, p.concept, p.hours, p.address, p.access, p.phone,
-     p.map_url, p.hero_image_url, JSON.stringify(p.photos), p.theme_color, JSON.stringify(p.translations)]
+     p.map_url, p.hero_image_url, JSON.stringify(p.photos), p.theme_color, JSON.stringify(p.translations),
+     p.rewards_text, p.line_friend_url]
   );
 }
 

@@ -33,11 +33,15 @@ export type StoreProfile = {
   hero_image_url: string | null;
   photos: string[];
   theme_color: string | null;
+  /** Free text about member rewards, e.g. "1回目：グラスワイン1杯". */
+  rewards_text: string | null;
+  /** The Official Account's add-friend link (https://lin.ee/…). */
+  line_friend_url: string | null;
   translations: Translations;
 };
 
 const PROFILE_COLUMNS = `id, slug, name, tagline, concept, hours, address, access, phone,
-  map_url, hero_image_url, photos, theme_color, translations`;
+  map_url, hero_image_url, photos, theme_color, rewards_text, line_friend_url, translations`;
 
 export function getStoreProfileBySlug(slug: string): Promise<StoreProfile | null> {
   return queryOne<StoreProfile>(`SELECT ${PROFILE_COLUMNS} FROM stores WHERE slug = $1`, [slug]);

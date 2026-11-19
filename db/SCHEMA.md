@@ -393,7 +393,12 @@ until removed. `reservations`: a guest's request (`reserved_for`, `party_size`, 
 `note`, `lang`), `status` requested → confirmed / declined / cancelled, with the LINE reply result
 in `notified` / `notify_error`. `stores.reservation_settings` holds the booking hours.
 
-**Languages (`0004_i18n.sql`).** The text columns of `stores`, `menu_categories`, `menu_items`
+**Rewards text and add-friend link (`0006_rewards_friend.sql`).** `stores.rewards_text`: free text
+describing member rewards (e.g. visit 1 → a glass of wine, visit 3 → a special glass), shown on the
+Mini App home and member card. `stores.line_friend_url`: the Official Account's add-friend link,
+shown as a 友だち追加 button.
+
+**Languages (`0004_i18n.sql`).** The text columns of `stores` (incl. `rewards_text`), `menu_categories`, `menu_items`
 and `benefits` hold the default language (Japanese). Each of those tables has
 `translations jsonb` = `{"en": {"<column>": "…"}}`; a missing field falls back to the column.
 

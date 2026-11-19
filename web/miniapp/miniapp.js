@@ -78,6 +78,9 @@
       first_visit_hint: "テーブルのQRコードを読み取ると、初回のご来店が記録されます。",
       checked_in_at: "{0} チェックイン", table_n: "テーブル {0}", party_n: (n) => n + "名",
       benefits: "特典", privacy: "プライバシー",
+      rewards_title: "会員特典", join_member: "会員になる",
+      add_friend: "LINE友だち追加",
+      friend_lead: "友だち追加すると、予約の確定や特典のお知らせがLINEで届きます。",
       no_benefits: "現在ご利用いただける特典はありません。",
       b_available: "ご利用いただけます。スタッフにお見せください。",
       b_locked: "初回ご来店時にテーブルのQRコードを読み取ると利用できます。",
@@ -162,6 +165,9 @@
       first_visit_hint: "Scan the QR on your table to record your first visit.",
       checked_in_at: "Checked in at {0}", table_n: "Table {0}", party_n: (n) => n + (n === 1 ? " guest" : " guests"),
       benefits: "Benefits", privacy: "Privacy",
+      rewards_title: "Member rewards", join_member: "Become a member",
+      add_friend: "Add us on LINE",
+      friend_lead: "Add us as a friend to get booking confirmations and reward news on LINE.",
       no_benefits: "No benefits right now.",
       b_available: "Ready — show it to staff now.",
       b_locked: "Scan the QR on your table on your first visit to unlock.",
@@ -396,6 +402,13 @@
     row(t("phone"), s.phone && el("a", { href: "tel:" + s.phone.replace(/[^\d+]/g, ""), text: s.phone }));
     info.hidden = !info.children.length;
 
+    const rewards = loc(s, "rewards_text") || "";
+    document.querySelectorAll(".js-rewards-text").forEach((n) => (n.textContent = rewards));
+    $("homeRewards").hidden = !rewards;
+    $("memberRewards").hidden = !rewards;
+    $("consentFriend").hidden = !s.line_friend_url;
+    document.querySelectorAll("#view-home .js-friend").forEach((n) => (n.hidden = !s.line_friend_url));
+
     const photos = $("storePhotos");
     photos.innerHTML = "";
     (s.photos || []).forEach((src) => {
@@ -456,6 +469,18 @@
       list.append(el("section", { class: "menu-cat", id: anchor }, [el("h2", { text: loc(cat, "label") })].concat(items)));
     });
   }
+
+  // ─── add friend ───────────────────────────────────────────────────────────
+
+  /** Open the Official Account's add-friend page (inside LINE when possible). */
+  function addFriend() {
+    const url = state.store && state.store.line_friend_url;
+    if (!url) return;
+    if (!DEV_USER && window.liff && liff.isInClient()) liff.openWindow({ url, external: false });
+    else window.open(url, "_blank", "noopener");
+  }
+  document.querySelectorAll(".js-friend").forEach((b) => b.addEventListener("click", addFriend));
+  $("homeJoin").addEventListener("click", () => (location.hash = "member"));
 
   // ─── consent ──────────────────────────────────────────────────────────────
 
@@ -539,6 +564,7 @@
     }
 
     renderBenefits(me.benefits);
+    $("memberFriend").hidden = !state.store.line_friend_url || me.guest.is_friend === true;
     $("partnerToggle").checked = !!me.consent.partner_sharing;
   }
 

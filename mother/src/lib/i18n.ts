@@ -14,7 +14,7 @@ export const EXTRA_LANGUAGES = LANGUAGES.slice(1).map((l) => l.code);
 
 /** Text fields that can be translated, per table. */
 export const TRANSLATABLE = {
-  store: ["tagline", "concept", "hours", "access", "address"],
+  store: ["tagline", "concept", "hours", "access", "address", "rewards_text"],
   category: ["label"],
   item: ["name", "description", "price_note"],
   recommendation: ["title", "description", "price_note"],

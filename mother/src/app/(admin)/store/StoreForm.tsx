@@ -26,6 +26,28 @@ const FIELDS: { key: keyof StoreProfile; label: Text; placeholder?: Text; multil
   { key: "map_url", label: { ja: "地図リンク", en: "Map link" }, placeholder: { ja: "https://maps.app.goo.gl/…", en: "https://maps.app.goo.gl/…" } },
   { key: "phone", label: { ja: "電話番号", en: "Phone" }, placeholder: { ja: "03-1234-5678", en: "03-1234-5678" } },
   {
+    key: "rewards_text",
+    label: { ja: "会員特典", en: "Member rewards" },
+    multiline: true,
+    placeholder: {
+      ja: "1回目のご来店：グラスワイン1杯\n3回目のご来店：特別なグラスワイン1杯",
+      en: "1st visit: a glass of wine\n3rd visit: a glass of our special wine",
+    },
+    hint: {
+      ja: "自由に入力できます。ミニアプリのホームと会員証に、入力したとおりに表示されます。",
+      en: "Free text. Shown as written on the Mini App home page and member card.",
+    },
+  },
+  {
+    key: "line_friend_url",
+    label: { ja: "LINE友だち追加リンク", en: "LINE add-friend link" },
+    placeholder: { ja: "https://lin.ee/…", en: "https://lin.ee/…" },
+    hint: {
+      ja: "LINE公式アカウントの管理画面 →「友だちを増やす」→「友だち追加ガイド」でURLをコピーしてください。ミニアプリに「友だち追加」ボタンが表示されます。",
+      en: "Copy it from LINE Official Account Manager → Gain friends → Add friend guide. The Mini App then shows an \"Add friend\" button.",
+    },
+  },
+  {
     key: "hero_image_url",
     label: { ja: "カバー写真URL", en: "Cover photo URL" },
     placeholder: { ja: "https://…", en: "https://…" },
@@ -42,8 +64,9 @@ const EN_LABEL: Record<string, Text> = {
   hours: { ja: "営業時間", en: "Hours" },
   access: { ja: "アクセス", en: "Access" },
   address: { ja: "住所", en: "Address" },
+  rewards_text: { ja: "会員特典", en: "Member rewards" },
 };
-const MULTILINE = new Set(["concept", "hours"]);
+const MULTILINE = new Set(["concept", "hours", "rewards_text"]);
 
 export default function StoreForm({ store, canTranslate }: { store: StoreProfile; canTranslate: boolean }) {
   const router = useRouter();

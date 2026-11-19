@@ -38,6 +38,8 @@ export async function POST(req: Request) {
     .filter(Boolean);
   const mapUrl = text(body.map_url);
   if (mapUrl && !isUrl(mapUrl)) return fail(tr(`URLではありません：${mapUrl}`, `Not a URL: ${mapUrl}`));
+  const friendUrl = text(body.line_friend_url);
+  if (friendUrl && !isUrl(friendUrl)) return fail(tr(`URLではありません：${friendUrl}`, `Not a URL: ${friendUrl}`));
   const images = [text(body.hero_image_url), ...photos].filter((u): u is string => !!u);
   const badUrl = images.find((u) => !isUrl(u) && !isBundledImage(u));
   if (badUrl) return fail(tr(`URLではありません：${badUrl}`, `Not a URL: ${badUrl}`));
@@ -57,6 +59,8 @@ export async function POST(req: Request) {
     hero_image_url: text(body.hero_image_url),
     photos,
     theme_color: themeColor,
+    rewards_text: text(body.rewards_text),
+    line_friend_url: friendUrl,
     translations: cleanTranslations(body.translations, TRANSLATABLE.store),
   });
   return ok();

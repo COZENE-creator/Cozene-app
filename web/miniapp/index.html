@@ -25,6 +25,12 @@
       <div class="pad">
         <button id="tableCta" class="cta" hidden></button>
         <p id="storeConcept" class="concept"></p>
+        <div id="homeRewards" class="rewards" hidden>
+          <h2 data-i18n="rewards_title">会員特典</h2>
+          <p class="rewards-text js-rewards-text"></p>
+          <button id="homeJoin" class="btn-primary" type="button" data-i18n="join_member">会員になる</button>
+        </div>
+        <button class="btn-friend js-friend" type="button" hidden data-i18n="add_friend">LINE友だち追加</button>
         <dl id="storeInfo" class="info"></dl>
         <div id="storePhotos" class="photos"></div>
       </div>
@@ -92,7 +98,12 @@
           <div id="currentVisit" class="notice" hidden></div>
 
           <h2 class="section-title" data-i18n="benefits">特典</h2>
+          <p id="memberRewards" class="rewards-text js-rewards-text" hidden></p>
           <div id="benefitList"></div>
+          <div id="memberFriend" hidden>
+            <p class="fineprint" data-i18n="friend_lead"></p>
+            <button class="btn-friend js-friend" type="button" data-i18n="add_friend">LINE友だち追加</button>
+          </div>
 
           <h2 class="section-title" data-i18n="privacy">プライバシー</h2>
           <label class="toggle-row">
@@ -139,6 +150,10 @@
         · <span data-i18n="policy_version"></span> <span id="policyVersion"></span>
       </p>
       <button id="consentAgree" class="btn-primary" disabled data-i18n="consent_agree">同意して続ける</button>
+      <div id="consentFriend" class="sheet-friend" hidden>
+        <p class="fineprint" data-i18n="friend_lead"></p>
+        <button class="btn-friend js-friend" type="button" data-i18n="add_friend">LINE友だち追加</button>
+      </div>
       <button id="consentCancel" class="btn-text" data-i18n="not_now">今はしない</button>
     </div>
   </div>
