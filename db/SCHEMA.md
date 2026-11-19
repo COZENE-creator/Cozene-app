@@ -387,6 +387,12 @@ person at every store.
 | `benefits` | per-store offers; `first_visit_glass` with `rule='first_visit'` |
 | `benefit_redemptions` | one per guest per benefit — `UNIQUE (benefit_id, guest_id)` makes "once per guest" a DB guarantee; links the `visit_id` it was used on |
 
+**本日のおすすめ and reservations (`0005_recommendations_reservations.sql`).** `recommendations`:
+free-form dishes for the top of the Mini App menu; `show_date` = that day only (Japan time), NULL =
+until removed. `reservations`: a guest's request (`reserved_for`, `party_size`, `name`, `phone`,
+`note`, `lang`), `status` requested → confirmed / declined / cancelled, with the LINE reply result
+in `notified` / `notify_error`. `stores.reservation_settings` holds the booking hours.
+
 **Languages (`0004_i18n.sql`).** The text columns of `stores`, `menu_categories`, `menu_items`
 and `benefits` hold the default language (Japanese). Each of those tables has
 `translations jsonb` = `{"en": {"<column>": "…"}}`; a missing field falls back to the column.

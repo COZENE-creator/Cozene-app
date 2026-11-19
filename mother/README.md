@@ -81,6 +81,9 @@ One Mini App serves every store. The QR on each table opens
 | Check-in: table (from QR), party size, timestamp | yes | `POST /api/app/checkin` → `visits` |
 | First-visit free glass, staff confirm with PIN, once per guest | yes | `POST /api/app/redeem` → `benefit_redemptions` |
 | Member card: visit count | yes | `POST /api/app/me` |
+| 本日のおすすめ (top of the Menu tab): today-only or until removed | no | `GET /api/app/store` ← Mother **本日のおすすめ** |
+| 予約 tab: reservation request (date, time, party, name, phone, note); staff confirm/decline → LINE message | yes | `POST /api/app/reservations` ↔ Mother **予約** |
+| Privacy policy (`../privacy.html`) | no | `GET /privacy` — linked from the consent sheet and member page |
 
 **Identity.** The client sends `liff.getIDToken()`, never a bare userId; the server verifies it
 with LINE (`src/lib/line-login.ts`). All stores live under one LINE provider, so the userId is

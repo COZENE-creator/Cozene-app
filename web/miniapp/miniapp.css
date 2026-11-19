@@ -185,3 +185,38 @@ button { font: inherit; cursor: pointer; }
   z-index: 40; background: rgba(29,26,23,.92); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
   max-width: calc(100vw - 32px);
 }
+
+/* 本日のおすすめ — top of the menu tab */
+.picks { padding-bottom: 0; }
+.picks h2 { font-size: 15px; margin: 0 0 10px; color: var(--accent); }
+.pick {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
+}
+.pick .name { font-weight: 700; }
+.pick .price { font-weight: 700; white-space: nowrap; text-align: right; }
+.pick .price .note { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.pick .desc { grid-column: 1 / -1; color: var(--text-2); font-size: 14px; white-space: pre-line; }
+.pick img { grid-column: 1 / -1; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 10px; margin-top: 6px; }
+
+/* 予約 */
+.section-title.first { margin-top: 6px; }
+.form { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 14px; }
+.form-lead { margin: 0 0 12px; font-size: 14px; color: var(--text-2); }
+.f { display: block; margin-bottom: 12px; font-size: 13px; font-weight: 650; color: var(--text-2); }
+.f em { font-style: normal; font-weight: 400; color: var(--muted); }
+.f input, .f select, .f textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 12px; font: inherit; font-size: 16px; font-weight: 400;
+  color: inherit; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-sizing: border-box;
+}
+.f textarea { resize: vertical; }
+.form .fineprint { margin: 10px 0 0; }
+.resv { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+.resv-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.resv-when { font-weight: 700; }
+.resv-sub { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: pre-line; }
+.resv-status { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #eef1f5; color: #667085; white-space: nowrap; }
+.resv-status.confirmed { background: #e7f6ec; color: #1e7a3c; }
+.resv-status.declined { background: #fdecec; color: #b42318; }
+.resv-cancel { margin-top: 8px; border: 0; background: none; padding: 0; color: var(--muted); font-size: 13px; text-decoration: underline; }

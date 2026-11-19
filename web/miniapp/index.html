@@ -33,8 +33,45 @@
     <!-- Menu (no login) -->
     <section id="view-menu" class="view" hidden>
       <nav id="menuNav" class="menu-nav"></nav>
+      <div id="todayPicks" class="pad picks" hidden></div>
       <div id="menuList" class="pad"></div>
       <p class="menu-foot pad" data-i18n="menu_foot">価格はすべて税込です。</p>
+    </section>
+
+    <!-- Reservation request (login + consent) -->
+    <section id="view-reserve" class="view" hidden>
+      <div class="pad">
+        <h2 class="section-title first" data-i18n="reserve_title">ご予約</h2>
+        <div id="reserveState" class="state" data-i18n="loading">読み込み中…</div>
+        <div id="reserveBody" hidden>
+          <div id="myReservations"></div>
+          <form id="reserveForm" class="form" novalidate>
+            <p class="form-lead" data-i18n="reserve_lead"></p>
+            <label class="f"><span data-i18n="reserve_date">日付</span>
+              <input id="rDate" type="date" required />
+            </label>
+            <label class="f"><span data-i18n="reserve_time">時間</span>
+              <select id="rTime" required></select>
+            </label>
+            <label class="f"><span data-i18n="reserve_party">人数</span>
+              <select id="rParty" required></select>
+            </label>
+            <label class="f"><span data-i18n="reserve_name">お名前</span>
+              <input id="rName" maxlength="60" autocomplete="name" required />
+            </label>
+            <label class="f"><span><span data-i18n="reserve_phone">電話番号</span> <em data-i18n="optional"></em></span>
+              <input id="rPhone" type="tel" maxlength="30" autocomplete="tel" />
+            </label>
+            <label class="f"><span><span data-i18n="reserve_note">ご要望</span> <em data-i18n="optional"></em></span>
+              <textarea id="rNote" maxlength="500" rows="3"></textarea>
+            </label>
+            <p id="reserveErr" class="err" hidden></p>
+            <button id="reserveGo" class="btn-primary" type="submit" data-i18n="reserve_send">予約をリクエスト</button>
+            <p class="fineprint" data-i18n="reserve_fine"></p>
+          </form>
+          <div id="reserveClosed" class="notice" hidden data-i18n="reserve_closed"></div>
+        </div>
+      </div>
     </section>
 
     <!-- Member card (login + consent) -->
@@ -65,6 +102,7 @@
             </span>
             <input id="partnerToggle" type="checkbox" />
           </label>
+          <p class="fineprint"><a href="/privacy" target="_blank" rel="noopener" data-i18n="privacy_link">プライバシーポリシー</a></p>
         </div>
       </div>
     </section>
@@ -73,6 +111,7 @@
   <nav id="tabs" class="tabs" hidden>
     <a href="#home" data-tab="home" data-i18n="tab_home">ホーム</a>
     <a href="#menu" data-tab="menu" data-i18n="tab_menu">メニュー</a>
+    <a href="#reserve" data-tab="reserve" data-i18n="tab_reserve">予約</a>
     <a href="#member" data-tab="member" data-i18n="tab_member">会員証</a>
     <button id="langBtn" class="lang-btn" type="button" aria-label="Language">EN</button>
   </nav>
@@ -95,7 +134,10 @@
         <input id="consentPartner" type="checkbox" />
         <span><span data-i18n="consent_partner"></span> <em data-i18n="optional"></em></span>
       </label>
-      <p class="fineprint"><span data-i18n="policy_version"></span> <span id="policyVersion"></span></p>
+      <p class="fineprint">
+        <a href="/privacy" target="_blank" rel="noopener" data-i18n="privacy_read">プライバシーポリシーを読む</a>
+        · <span data-i18n="policy_version"></span> <span id="policyVersion"></span>
+      </p>
       <button id="consentAgree" class="btn-primary" disabled data-i18n="consent_agree">同意して続ける</button>
       <button id="consentCancel" class="btn-text" data-i18n="not_now">今はしない</button>
     </div>

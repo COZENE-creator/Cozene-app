@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar, IconStore, IconMenu, IconQr } from "../icons";
+import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar, IconStore, IconMenu, IconQr, IconSparkle, IconCalendar } from "../icons";
 import { LangSwitch, useTr } from "../LangProvider";
 
 const NAV = [
@@ -17,10 +17,12 @@ const NAV = [
 const MINIAPP_NAV = [
   { href: "/store", ja: "店舗情報", en: "Store", Icon: IconStore },
   { href: "/menu", ja: "メニュー", en: "Menu", Icon: IconMenu },
+  { href: "/recommendations", ja: "本日のおすすめ", en: "Today's picks", Icon: IconSparkle },
+  { href: "/reservations", ja: "予約", en: "Reservations", Icon: IconCalendar },
   { href: "/qr", ja: "テーブルQR", en: "Table QR", Icon: IconQr },
 ];
 
-export default function Sidebar({ admin }: { admin: string }) {
+export default function Sidebar({ admin, pendingReservations }: { admin: string; pendingReservations: number }) {
   const pathname = usePathname();
   const router = useRouter();
   const tr = useTr();
@@ -57,6 +59,9 @@ export default function Sidebar({ admin }: { admin: string }) {
           <Link key={href} href={href} className={`nav-item ${isActive(href) ? "active" : ""}`}>
             <Icon />
             {tr(ja, en)}
+            {href === "/reservations" && pendingReservations > 0 && (
+              <span className="nav-count" title={tr("未対応の予約リクエスト", "Requests waiting for a reply")}>{pendingReservations}</span>
+            )}
           </Link>
         ))}
       </nav>

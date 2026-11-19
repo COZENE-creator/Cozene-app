@@ -3,6 +3,8 @@
 // Opened from https://miniapp.line.me/<LIFF_ID>?store=<slug>[&table=<no>]
 //   * Home + Menu:  public, no login.
 //   * Member card:  login → consent → visit count + benefits.
+//   * 予約 tab:     login → consent → reservation request; staff confirm in
+//                   Mother and the guest gets a LINE message.
 //   * ?table=7:     login → consent → party size → check-in → free-glass pass
 //                   on a first visit.
 //   * Language:     Japanese by default, English via the switch in the tab bar
@@ -27,14 +29,42 @@
   const HEADERS = { "ngrok-skip-browser-warning": "1" };
 
   const $ = (id) => document.getElementById(id);
-  const state = { store: null, menu: [], slug: "", table: "", me: null, partySize: 0, pin: "" };
+  const state = {
+    store: null, menu: [], picks: [], booking: null, reservations: null,
+    slug: "", table: "", me: null, partySize: 0, pin: "",
+  };
 
   // ─── language ─────────────────────────────────────────────────────────────
 
   const LANGS = ["ja", "en"]; // first = default
   const STRINGS = {
     ja: {
-      tab_home: "ホーム", tab_menu: "メニュー", tab_member: "会員証", lang_switch: "EN",
+      tab_home: "ホーム", tab_menu: "メニュー", tab_reserve: "予約", tab_member: "会員証", lang_switch: "EN",
+      today_picks: "本日のおすすめ",
+      reserve_title: "ご予約",
+      reserve_lead: "ご希望の日時をお送りください。お店から確定のご連絡をLINEでお送りします。",
+      reserve_date: "日付", reserve_time: "時間", reserve_party: "人数", reserve_name: "お名前",
+      reserve_phone: "電話番号", reserve_note: "ご要望",
+      reserve_send: "予約をリクエスト",
+      reserve_fine: "リクエストの時点では予約は確定していません。確定のお知らせを受け取るには、LINE公式アカウントを友だち追加してください。",
+      reserve_closed: "現在ミニアプリでの予約は受け付けておりません。お電話でお問い合わせください。",
+      reserve_gate: "ご予約にはデータ利用への同意が必要です。",
+      reserve_sent: "予約リクエストを送信しました。確定のご連絡をお待ちください。",
+      reserve_mine: "あなたのご予約",
+      reserve_party_more: (n) => n + "名以上はお電話でお問い合わせください",
+      reserve_no_times: "この日は選べる時間がありません",
+      resv_requested: "確認中", resv_confirmed: "確定", resv_declined: "お受けできませんでした", resv_cancelled: "キャンセル済み",
+      resv_cancel: "この予約をキャンセル",
+      resv_cancel_confirm: "この予約をキャンセルしますか？",
+      resv_cancelled_toast: "予約をキャンセルしました。",
+      privacy_link: "プライバシーポリシー", privacy_read: "プライバシーポリシーを読む",
+      err_reservations_closed: "現在ミニアプリでの予約は受け付けておりません。",
+      err_invalid_date: "日付を選び直してください。",
+      err_invalid_time: "時間を選び直してください。",
+      err_invalid_party: "人数を選び直してください。",
+      err_name_required: "お名前を入力してください。",
+      err_too_many_requests: "確認中の予約が多いため、お店からの連絡をお待ちください。",
+      err_not_cancellable: "この予約はキャンセルできません。",
       loading: "読み込み中…",
       hours: "営業時間", access: "アクセス", address: "住所", map: "地図", open_map: "地図を開く", phone: "電話",
       menu_empty: "本日の内容はスタッフにおたずねください。",
@@ -93,7 +123,32 @@
       could_not_load_store: "店舗情報を読み込めませんでした: {0}",
     },
     en: {
-      tab_home: "Home", tab_menu: "Menu", tab_member: "Member", lang_switch: "日本語",
+      tab_home: "Home", tab_menu: "Menu", tab_reserve: "Book", tab_member: "Member", lang_switch: "日本語",
+      today_picks: "Today's picks",
+      reserve_title: "Reservation",
+      reserve_lead: "Send us your preferred date and time. The restaurant will confirm on LINE.",
+      reserve_date: "Date", reserve_time: "Time", reserve_party: "Party size", reserve_name: "Name",
+      reserve_phone: "Phone", reserve_note: "Requests",
+      reserve_send: "Request a table",
+      reserve_fine: "A request isn't a confirmed booking yet. Add the official LINE account as a friend to receive the confirmation.",
+      reserve_closed: "Online reservations are closed right now. Please call the restaurant.",
+      reserve_gate: "Agree to the data-use terms to make a reservation.",
+      reserve_sent: "Request sent. We'll confirm on LINE.",
+      reserve_mine: "Your reservations",
+      reserve_party_more: (n) => "For " + n + " or more, please call",
+      reserve_no_times: "No times left on this day",
+      resv_requested: "Waiting", resv_confirmed: "Confirmed", resv_declined: "Not available", resv_cancelled: "Cancelled",
+      resv_cancel: "Cancel this reservation",
+      resv_cancel_confirm: "Cancel this reservation?",
+      resv_cancelled_toast: "Reservation cancelled.",
+      privacy_link: "Privacy policy", privacy_read: "Read the privacy policy",
+      err_reservations_closed: "Online reservations are closed right now.",
+      err_invalid_date: "Please choose the date again.",
+      err_invalid_time: "Please choose the time again.",
+      err_invalid_party: "Please choose the party size again.",
+      err_name_required: "Please enter your name.",
+      err_too_many_requests: "You have several requests waiting — please wait for the restaurant's reply.",
+      err_not_cancellable: "This reservation can't be cancelled.",
       loading: "Loading…",
       hours: "Hours", access: "Access", address: "Address", map: "Map", open_map: "Open map", phone: "Phone",
       menu_empty: "Ask our staff about today's selection.",
@@ -196,6 +251,10 @@
     $("ciTitle").textContent = t("checkin_title", state.table);
     if (passBenefit) $("passTitle").textContent = loc(passBenefit, "title");
     if (state.me && !$("memberBody").hidden) renderMember(state.me);
+    if (!$("reserveBody").hidden) {
+      buildReserveForm(true);
+      renderReservations();
+    }
   }
 
   $("langBtn").addEventListener("click", () => setLanguage(lang === LANGS[0] ? LANGS[1] : LANGS[0]));
@@ -293,7 +352,7 @@
 
   // ─── routing (hash tabs) ──────────────────────────────────────────────────
 
-  const TABS = ["home", "menu", "member"];
+  const TABS = ["home", "menu", "reserve", "member"];
 
   function currentTab() {
     const t = location.hash.replace("#", "");
@@ -306,6 +365,7 @@
     document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
     window.scrollTo(0, 0);
     if (tab === "member") openMember();
+    if (tab === "reserve") openReserve();
   }
 
   // ─── public: store + menu ─────────────────────────────────────────────────
@@ -345,7 +405,27 @@
     });
   }
 
+  function renderPicks() {
+    const box = $("todayPicks");
+    box.innerHTML = "";
+    box.hidden = !state.picks.length;
+    if (!state.picks.length) return;
+    box.append(el("h2", { text: "★ " + t("today_picks") }));
+    state.picks.forEach((r) => {
+      box.append(el("div", { class: "pick" }, [
+        el("div", { class: "name", text: loc(r, "title") }),
+        el("div", { class: "price" }, [
+          r.price != null ? yen(r.price) : "",
+          loc(r, "price_note") ? el("span", { class: "note", text: loc(r, "price_note") }) : null,
+        ]),
+        loc(r, "description") ? el("div", { class: "desc", text: loc(r, "description") }) : null,
+        r.image_url ? el("img", { src: r.image_url, alt: "", loading: "lazy" }) : null,
+      ]));
+    });
+  }
+
   function renderMenu(menu) {
+    renderPicks();
     const nav = $("menuNav");
     const list = $("menuList");
     nav.innerHTML = "";
@@ -489,6 +569,144 @@
     } catch (err) {
       e.target.checked = !on;
       toast(t("could_not_save", errText(err)));
+    }
+  });
+
+  // ─── reservations ─────────────────────────────────────────────────────────
+
+  const japanToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo" }).format(new Date());
+  const japanNow = () => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" }).format(new Date());
+
+  function addDays(ymd, days) {
+    const d = new Date(ymd + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function reservationTime(iso) {
+    const d = new Date(iso);
+    const opts = { timeZone: "Asia/Tokyo", month: "short", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" };
+    return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "ja-JP", opts).format(d);
+  }
+
+  /** Time choices for the picked date: today only shows times still ahead. */
+  function fillTimes() {
+    const b = state.booking;
+    const sel = $("rTime");
+    const keep = sel.value;
+    const isToday = $("rDate").value === japanToday();
+    const now = japanNow();
+    const times = b.times.filter((x) => !isToday || x > now);
+    sel.innerHTML = "";
+    if (!times.length) sel.append(el("option", { value: "", text: t("reserve_no_times") }));
+    times.forEach((x) => sel.append(el("option", { value: x, text: x })));
+    if (times.includes(keep)) sel.value = keep;
+  }
+
+  /** Set up the form from the store's booking hours. `keepValues` keeps what the guest typed. */
+  function buildReserveForm(keepValues) {
+    const b = state.booking;
+    const today = japanToday();
+    $("rDate").min = today;
+    $("rDate").max = addDays(today, b.days_ahead);
+    if (!keepValues || !$("rDate").value) $("rDate").value = today;
+    fillTimes();
+    const party = $("rParty");
+    const keep = party.value;
+    party.innerHTML = "";
+    for (let n = 1; n <= b.max_party; n++) party.append(el("option", { value: String(n), text: t("party_n", n) }));
+    party.append(el("option", { value: "", disabled: "disabled", text: t("reserve_party_more", b.max_party + 1) }));
+    party.value = keepValues && keep ? keep : String(Math.min(2, b.max_party));
+    if (!keepValues && !$("rName").value && state.me) $("rName").value = state.me.guest.display_name || "";
+  }
+
+  function renderReservations() {
+    const box = $("myReservations");
+    box.innerHTML = "";
+    const list = (state.reservations || []).filter((r) => r.status !== "cancelled");
+    if (!list.length) return;
+    box.append(el("h2", { class: "section-title first", text: t("reserve_mine") }));
+    list.forEach((r) => {
+      const canCancel = (r.status === "requested" || r.status === "confirmed") && new Date(r.reserved_for) > new Date();
+      box.append(el("div", { class: "resv" }, [
+        el("div", { class: "resv-top" }, [
+          el("span", { class: "resv-when", text: reservationTime(r.reserved_for) }),
+          el("span", { class: "resv-status " + r.status, text: t("resv_" + r.status) }),
+        ]),
+        el("div", { class: "resv-sub", text: [t("party_n", r.party_size), r.name].join(" · ") + (r.staff_message ? "\n" + r.staff_message : "") }),
+        canCancel ? el("button", { class: "resv-cancel", type: "button", text: t("resv_cancel"), onclick: () => cancelReservation(r) }) : null,
+      ]));
+    });
+  }
+
+  async function openReserve() {
+    $("reserveBody").hidden = true;
+    $("reserveState").hidden = false;
+    $("reserveState").textContent = t("loading");
+    try {
+      const me = await memberSession();
+      if (!me) {
+        $("reserveState").textContent = t("reserve_gate");
+        return;
+      }
+      const res = await api("/reservations", { action: "list" });
+      state.reservations = res.reservations;
+      $("reserveState").hidden = true;
+      $("reserveBody").hidden = false;
+      const open = state.booking && state.booking.enabled;
+      $("reserveForm").hidden = !open;
+      $("reserveClosed").hidden = open;
+      if (open) buildReserveForm(false);
+      renderReservations();
+    } catch (err) {
+      $("reserveState").textContent = t("could_not_load", errText(err));
+    }
+  }
+
+  async function cancelReservation(r) {
+    if (!window.confirm(t("resv_cancel_confirm"))) return;
+    try {
+      const res = await api("/reservations", { action: "cancel", id: r.id });
+      state.reservations = res.reservations;
+      renderReservations();
+      toast(t("resv_cancelled_toast"));
+    } catch (err) {
+      toast(errText(err));
+    }
+  }
+
+  $("rDate").addEventListener("change", fillTimes);
+
+  $("reserveForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const showErr = (msg) => {
+      $("reserveErr").textContent = msg;
+      $("reserveErr").hidden = false;
+    };
+    $("reserveErr").hidden = true;
+    if (!$("rTime").value) return showErr(t("err_invalid_time"));
+    if (!$("rName").value.trim()) return showErr(t("err_name_required"));
+    $("reserveGo").disabled = true;
+    try {
+      const res = await api("/reservations", {
+        action: "create",
+        date: $("rDate").value,
+        time: $("rTime").value,
+        party_size: Number($("rParty").value),
+        name: $("rName").value,
+        phone: $("rPhone").value,
+        note: $("rNote").value,
+        lang,
+      });
+      state.reservations = res.reservations;
+      $("rNote").value = "";
+      renderReservations();
+      toast(t("reserve_sent"));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      showErr(errText(err));
+    } finally {
+      $("reserveGo").disabled = false;
     }
   });
 
@@ -664,6 +882,8 @@
       if (!res.ok || !data.ok) throw new Error(data.error || "HTTP " + res.status);
       state.store = data.store;
       state.menu = data.menu;
+      state.picks = data.recommendations || [];
+      state.booking = data.reservation || null;
       applyStaticText(); // fills {store} in the consent text
       renderStore(data.store);
       renderMenu(data.menu);
@@ -688,6 +908,15 @@
     } catch (e) { /* storage blocked */ }
 
     window.addEventListener("hashchange", showTab);
+    // The page has <base href="/miniapp/">, so a plain href="#menu" would load
+    // /miniapp/#menu — a full reload that drops ?store and ?table. Switch tabs
+    // by changing only the hash of the current URL.
+    document.querySelectorAll(".tabs a").forEach((a) =>
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (currentTab() !== a.dataset.tab) location.hash = a.dataset.tab;
+      })
+    );
     showTab();
     // Arriving from a table QR: go straight into check-in.
     if (state.table && currentTab() === "home") startCheckin();

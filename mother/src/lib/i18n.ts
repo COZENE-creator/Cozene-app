@@ -17,6 +17,7 @@ export const TRANSLATABLE = {
   store: ["tagline", "concept", "hours", "access", "address"],
   category: ["label"],
   item: ["name", "description", "price_note"],
+  recommendation: ["title", "description", "price_note"],
 } as const;
 
 /**

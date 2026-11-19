@@ -411,3 +411,10 @@ textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
 /* English version block on the Store / Menu forms */
 .i18n-block { border-top: 1px solid var(--border); margin: 20px 0 8px; padding-top: 16px; }
 .i18n-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+/* sidebar: count of reservation requests waiting for a reply */
+.nav-count {
+  margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--danger); color: #fff; font-size: 11px; font-weight: 700;
+  display: inline-grid; place-items: center;
+}
