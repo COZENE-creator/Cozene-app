@@ -401,6 +401,11 @@ few △ / full ×) is the calendar staff set by hand; no row = open (closed week
 every step — guest `requested` / `cancelled` / `accepted`, staff `confirmed` / `proposed` /
 `declined` with `staff_name`, `message` and the LINE delivery result.
 
+**Uploaded photos (`0009_media.sql`).** `media` (`store_id`, `content_type`, `bytes`, `size`):
+photos uploaded from the admin (e.g. a phone camera), shrunk in the browser to a ≤1600px JPEG.
+Served publicly at `/media/<id>`; `recommendations.image_url` and `menu_items.image_url` hold
+either that path or a web link. Kept in the database so backups include them.
+
 **Seat layout (`0008_seat_layout.sql`).** `stores.seat_layout` = `{counter, tables, other}`; each
 seat gets its own QR with `?table=` C1…Cn (counter seats), T1…Tn (tables) or the name in `other`.
 `visits.table_no` keeps that code; the Mini App and admin show it as カウンター 3 / テーブル 2. Bare

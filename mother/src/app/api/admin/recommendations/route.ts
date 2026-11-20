@@ -4,6 +4,7 @@ import { getTr } from "@/lib/lang-server";
 import { adminStoreId } from "@/lib/store-admin";
 import { upsertRecommendation, deleteRecommendation } from "@/lib/recommendations";
 import { cleanTranslations, TRANSLATABLE } from "@/lib/i18n";
+import { isPhotoUrl } from "@/lib/media";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       const price = body.price === "" || body.price == null ? null : int(body.price, NaN);
       if (price !== null && !(price >= 0)) return fail(tr("価格は円単位の整数で入力してください", "Price must be a whole number of yen"));
       const imageUrl = text(body.image_url);
-      if (imageUrl && !/^https?:\/\/\S+$/i.test(imageUrl)) return fail(tr("写真はURLで指定してください", "Photo must be a URL"));
+      if (imageUrl && !isPhotoUrl(imageUrl)) return fail(tr("写真はURLで指定するか、アップロードしてください", "Photo must be a link or an uploaded photo"));
       const showDate = text(body.show_date);
       if (showDate && !/^\d{4}-\d{2}-\d{2}$/.test(showDate)) return fail(tr("日付が正しくありません", "Invalid date"));
       await upsertRecommendation(storeId, {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhotoField from "../../PhotoField";
 import { useRouter } from "next/navigation";
 import { adminPost } from "@/lib/admin-fetch";
 import { money } from "@/lib/format";
@@ -205,8 +206,8 @@ export default function MenuEditor({ menu, canTranslate }: { menu: MenuCategory[
               </div>
             </div>
             <div className="field">
-              <label>{tr("写真URL", "Photo URL")} <span className="muted">{tr("（任意）", "(optional)")}</span></label>
-              <input value={draft.image_url} onChange={(e) => setDraft({ ...draft, image_url: e.target.value })} placeholder="https://…" />
+              <label>{tr("写真", "Photo")} <span className="muted">{tr("（任意）", "(optional)")}</span></label>
+              <PhotoField value={draft.image_url} onChange={(url) => setDraft((d) => (d ? { ...d, image_url: url } : d))} />
             </div>
             <div className="i18n-block">
               <div className="i18n-head">
@@ -234,6 +235,7 @@ export default function MenuEditor({ menu, canTranslate }: { menu: MenuCategory[
               <input type="checkbox" checked={draft.is_available} onChange={(e) => setDraft({ ...draft, is_available: e.target.checked })} style={{ width: "auto" }} />
               {tr("お客様に表示", "Shown to guests")}
             </label>
+            {err && <div className="alert err">{err}</div>}
             <div className="form-actions">
               <button className="btn btn-primary" onClick={saveItem} disabled={busy || !draft.name.trim()}>{busy ? tr("保存中…", "Saving…") : tr("品目を保存", "Save item")}</button>
               <button className="btn btn-ghost" onClick={() => setDraft(null)}>{tr("キャンセル", "Cancel")}</button>

@@ -20,6 +20,8 @@
   const cfg = window.COZENE_CONFIG || {};
   const LIFF_ID = cfg.MINIAPP_LIFF_ID || cfg.LIFF_ID;
   const API = (cfg.ENDPOINT_BASE || "").replace(/\/$/, "") + "/api/app";
+  // Photos uploaded in the admin are served by the Mother System (/media/<id>).
+  const media = (src) => (src && src.startsWith("/media/") ? (cfg.ENDPOINT_BASE || "").replace(/\/$/, "") + src : src);
   // Local testing without LINE: set DEV_USER_ID in config.js and run the
   // Mother System with LINE_ID_TOKEN_DEV=1.
   const DEV_USER = cfg.DEV_USER_ID || "";
@@ -478,7 +480,7 @@
           loc(r, "price_note") ? el("span", { class: "note", text: loc(r, "price_note") }) : null,
         ]),
         loc(r, "description") ? el("div", { class: "desc", text: loc(r, "description") }) : null,
-        r.image_url ? el("img", { src: r.image_url, alt: "", loading: "lazy" }) : null,
+        r.image_url ? el("img", { src: media(r.image_url), alt: "", loading: "lazy" }) : null,
       ]));
     });
   }
@@ -508,7 +510,7 @@
                 loc(i, "price_note") ? el("span", { class: "note", text: loc(i, "price_note") }) : null,
               ]),
               loc(i, "description") ? el("div", { class: "desc", text: loc(i, "description") }) : null,
-              i.image_url ? el("img", { src: i.image_url, alt: "", loading: "lazy" }) : null,
+              i.image_url ? el("img", { src: media(i.image_url), alt: "", loading: "lazy" }) : null,
             ])
           )
         : [el("div", { class: "menu-empty", text: t("menu_empty") })];

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { IconUsers, IconMegaphone, IconSend, IconTag, IconStar, IconStore, IconMenu, IconQr, IconSparkle, IconCalendar } from "../icons";
@@ -32,6 +33,11 @@ export default function Sidebar({ admin, pendingReservations }: { admin: string;
     return pathname === href || pathname.startsWith(href + "/");
   }
 
+  // On a phone the pages are one scrolling strip: bring the current one into view.
+  useEffect(() => {
+    document.querySelector(".sidebar .nav-item.active")?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [pathname]);
+
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -43,6 +49,8 @@ export default function Sidebar({ admin, pendingReservations }: { admin: string;
         <span className="dot">C</span> COZENE
       </div>
 
+      {/* One scrolling strip on phones (see globals.css). */}
+      <div className="nav-groups">
       <div className="section-label">{tr("マーケティング", "Workspace")}</div>
       <nav>
         {NAV.map(({ href, ja, en, Icon }) => (
@@ -65,10 +73,11 @@ export default function Sidebar({ admin, pendingReservations }: { admin: string;
           </Link>
         ))}
       </nav>
+      </div>
 
       <div className="spacer" />
 
-      <div style={{ padding: "0 14px 10px" }}>
+      <div className="sidebar-lang">
         <LangSwitch className="btn btn-ghost btn-sm" style={{ color: "var(--ink-muted)" }} />
       </div>
 
