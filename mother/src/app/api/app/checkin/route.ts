@@ -11,7 +11,7 @@ export const OPTIONS = corsOptions;
 type Body = GuestBody & { table?: string; party_size?: number; raw?: unknown };
 
 /**
- * Table QR check-in: table number (from the QR), party size, timestamp.
+ * Seat QR check-in: seat code (from the QR, e.g. C3 / T2), party size, timestamp.
  * Requires store_use consent. Only while the store is open (if the store limits
  * it: error "outside_hours"), and once per guest per business day — a second
  * scan that day updates the same visit (is_new: false). Returns the updated member card + benefits so

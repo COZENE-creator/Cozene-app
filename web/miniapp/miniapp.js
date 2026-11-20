@@ -39,7 +39,7 @@
   const LANGS = ["ja", "en"]; // first = default
   const STRINGS = {
     ja: {
-      tab_home: "ホーム", tab_menu: "メニュー", tab_reserve: "予約", tab_member: "会員証", lang_switch: "EN",
+      tab_home: "ホーム", tab_menu: "メニュー", tab_reserve: "予約", tab_checkin: "チェックイン", tab_member: "会員証", lang_switch: "EN",
       today_picks: "本日のおすすめ",
       reserve_title: "ご予約",
       reserve_lead: "カレンダーから日付を選び、ご希望の時間と人数をお送りください。お店からLINEでご連絡します。",
@@ -85,15 +85,15 @@
       guest: "ゲスト",
       visits: (n) => "回のご来店",
       member_since: "会員登録日 {0}",
-      first_visit_hint: "テーブルのQRコードを読み取ると、初回のご来店が記録されます。",
-      checked_in_at: "{0} チェックイン", table_n: "テーブル {0}", party_n: (n) => n + "名",
+      first_visit_hint: "お席のQRコードを読み取ると、初回のご来店が記録されます。",
+      checked_in_at: "{0} チェックイン", table_n: "テーブル {0}", counter_n: "カウンター {0}", party_n: (n) => n + "名",
       benefits: "特典", privacy: "プライバシー",
       rewards_title: "会員特典", join_member: "会員になる",
       add_friend: "LINE友だち追加",
       friend_lead: "友だち追加すると、予約の確定や特典のお知らせがLINEで届きます。",
       no_benefits: "現在ご利用いただける特典はありません。",
       b_available: "ご利用いただけます。スタッフにお見せください。",
-      b_locked: "初回ご来店時にテーブルのQRコードを読み取ると利用できます。",
+      b_locked: "初回ご来店時にお席のQRコードを読み取ると利用できます。",
       b_redeemed: "{0} にご利用済み",
       b_expired: "この特典は初回ご来店時のみ有効でした。",
       show: "表示",
@@ -111,14 +111,23 @@
       required: "（必須）", optional: "（任意）",
       policy_version: "ポリシー版",
       consent_agree: "同意して続ける", not_now: "今はしない",
-      checkin_title: "チェックイン — テーブル {0}",
+      checkin_title: "チェックイン — {0}",
       party_question: "何名様でご来店ですか？",
       check_in: "チェックイン", cancel: "キャンセル",
-      checkin_cta: "テーブル {0} でチェックイン",
+      checkin_cta: "{0} でチェックイン",
+      scan_title: "お席のQRコードを読み取る",
+      scan_lead: "カウンター・テーブルに置いてあるQRコードを読み取って、チェックインしてください。",
+      scan_qr: "QRコードを読み取る",
+      scan_unavailable: "この画面ではカメラを使えません。LINEアプリのQRコードリーダーで、お席のQRコードを読み取ってください。",
+      scan_not_seat: "お席のQRコードではないようです。カウンター・テーブルに置いてあるQRコードを読み取ってください。",
+      scan_failed: "読み取れませんでした: {0}",
+      checkin_hours: "チェックイン受付時間 {0}",
+      checkin_closed_now: "現在は営業時間外のため、チェックインできません。",
+      checked_in_today: "本日チェックイン済み: {0}",
       checkin_needs_consent: "チェックインにはデータ利用への同意が必要です。",
       could_not_checkin: "チェックインできませんでした: {0}",
       checked_in: "チェックインしました。ご来店ありがとうございます！",
-      checkin_updated: "本日はチェックイン済みです。テーブルと人数を更新しました。",
+      checkin_updated: "本日はチェックイン済みです。お席と人数を更新しました。",
       welcome_gift: "ウェルカムギフト", enjoy: "どうぞお楽しみください！", confirmed_at: "{0} に確認しました",
       staff_pin: "スタッフPIN",
       pass_hint: "この画面をスタッフにお見せください。時計が動いていることが有効な画面の印です。",
@@ -136,7 +145,7 @@
       could_not_load_store: "店舗情報を読み込めませんでした: {0}",
     },
     en: {
-      tab_home: "Home", tab_menu: "Menu", tab_reserve: "Book", tab_member: "Member", lang_switch: "日本語",
+      tab_home: "Home", tab_menu: "Menu", tab_reserve: "Book", tab_checkin: "Check in", tab_member: "Member", lang_switch: "日本語",
       today_picks: "Today's picks",
       reserve_title: "Reservation",
       reserve_lead: "Pick a date on the calendar and send us your preferred time and party size. The restaurant will reply on LINE.",
@@ -182,15 +191,15 @@
       guest: "Guest",
       visits: (n) => (n === 1 ? "visit" : "visits"),
       member_since: "Member since {0}",
-      first_visit_hint: "Scan the QR on your table to record your first visit.",
-      checked_in_at: "Checked in at {0}", table_n: "Table {0}", party_n: (n) => n + (n === 1 ? " guest" : " guests"),
+      first_visit_hint: "Scan the QR at your seat to record your first visit.",
+      checked_in_at: "Checked in at {0}", table_n: "Table {0}", counter_n: "Counter {0}", party_n: (n) => n + (n === 1 ? " guest" : " guests"),
       benefits: "Benefits", privacy: "Privacy",
       rewards_title: "Member rewards", join_member: "Become a member",
       add_friend: "Add us on LINE",
       friend_lead: "Add us as a friend to get booking confirmations and reward news on LINE.",
       no_benefits: "No benefits right now.",
       b_available: "Ready — show it to staff now.",
-      b_locked: "Scan the QR on your table on your first visit to unlock.",
+      b_locked: "Scan the QR at your seat on your first visit to unlock.",
       b_redeemed: "Used on {0}.",
       b_expired: "This welcome gift was for your first visit.",
       show: "Show",
@@ -208,14 +217,23 @@
       required: "(required)", optional: "(optional)",
       policy_version: "Policy version",
       consent_agree: "Agree and continue", not_now: "Not now",
-      checkin_title: "Check in — Table {0}",
+      checkin_title: "Check in — {0}",
       party_question: "How many people are in your party?",
       check_in: "Check in", cancel: "Cancel",
-      checkin_cta: "Check in to Table {0}",
+      checkin_cta: "Check in at {0}",
+      scan_title: "Scan the QR at your seat",
+      scan_lead: "Scan the QR code on your counter seat or table to check in.",
+      scan_qr: "Scan QR code",
+      scan_unavailable: "The camera isn't available here. Use the QR reader in the LINE app to scan the code at your seat.",
+      scan_not_seat: "That doesn't look like a seat QR. Please scan the code on your counter seat or table.",
+      scan_failed: "Could not scan: {0}",
+      checkin_hours: "Check-in hours {0}",
+      checkin_closed_now: "We're closed right now, so check-in isn't available.",
+      checked_in_today: "Checked in today: {0}",
       checkin_needs_consent: "Check-in needs your agreement to the data-use terms.",
       could_not_checkin: "Could not check in: {0}",
       checked_in: "Checked in. Welcome back!",
-      checkin_updated: "You've already checked in today. Table and party size updated.",
+      checkin_updated: "You've already checked in today. Seat and party size updated.",
       welcome_gift: "Welcome gift", enjoy: "Enjoy your glass!", confirmed_at: "Confirmed at {0}",
       staff_pin: "Staff PIN",
       pass_hint: "Show this screen to staff. The clock proves it is live.",
@@ -273,8 +291,9 @@
       renderStore(state.store);
       renderMenu(state.menu);
     }
-    if (state.table) $("tableCta").textContent = t("checkin_cta", state.table);
-    $("ciTitle").textContent = t("checkin_title", state.table);
+    if (state.table) $("tableCta").textContent = t("checkin_cta", seatLabel(state.table));
+    $("ciTitle").textContent = t("checkin_title", seatLabel(state.table));
+    if (currentTab() === "checkin") openCheckinTab();
     if (passBenefit) $("passTitle").textContent = loc(passBenefit, "title");
     if (state.me && !$("memberBody").hidden) renderMember(state.me);
     if (!$("reserveBody").hidden) {
@@ -286,6 +305,13 @@
   $("langBtn").addEventListener("click", () => setLanguage(lang === LANGS[0] ? LANGS[1] : LANGS[0]));
 
   // ─── helpers ──────────────────────────────────────────────────────────────
+
+  /** Seat code from the QR → label: "C3" counter seat 3, "T2" table 2, else "Table <code>". */
+  function seatLabel(code) {
+    const m = /^([CT])(\d+)$/i.exec(code || "");
+    if (!m) return t("table_n", code);
+    return t(m[1].toUpperCase() === "C" ? "counter_n" : "table_n", m[2]);
+  }
 
   function el(tag, attrs, children) {
     const node = document.createElement(tag);
@@ -378,7 +404,7 @@
 
   // ─── routing (hash tabs) ──────────────────────────────────────────────────
 
-  const TABS = ["home", "menu", "reserve", "member"];
+  const TABS = ["home", "menu", "reserve", "checkin", "member"];
 
   function currentTab() {
     const t = location.hash.replace("#", "");
@@ -392,6 +418,7 @@
     window.scrollTo(0, 0);
     if (tab === "member") openMember();
     if (tab === "reserve") openReserve();
+    if (tab === "checkin") openCheckinTab();
   }
 
   // ─── public: store + menu ─────────────────────────────────────────────────
@@ -577,7 +604,7 @@
     if (cv) {
       $("currentVisit").textContent = [
         t("checked_in_at", time(cv.checked_in_at)),
-        cv.table_no ? t("table_n", cv.table_no) : null,
+        cv.table_no ? seatLabel(cv.table_no) : null,
         cv.party_size ? t("party_n", cv.party_size) : null,
       ].filter(Boolean).join(" · ");
     }
@@ -842,7 +869,7 @@
     }
     state.partySize = 0;
     buildPartyGrid();
-    $("ciTitle").textContent = t("checkin_title", state.table);
+    $("ciTitle").textContent = t("checkin_title", seatLabel(state.table));
     $("checkinGo").disabled = true;
     $("checkinErr").hidden = true;
     $("checkinFriend").hidden = !state.store.line_friend_url || (state.me && state.me.guest.is_friend === true);
@@ -872,6 +899,7 @@
       if (welcome) openPass(welcome);
       else toast(t(res.is_new ? "checked_in" : "checkin_updated"));
       if (currentTab() === "member") renderMember(state.me);
+      if (currentTab() === "checkin") openCheckinTab();
     } catch (err) {
       const hours = state.checkin && err.code === "outside_hours"
         ? " (" + state.checkin.open + "–" + state.checkin.close + ")"
@@ -881,6 +909,82 @@
       $("checkinGo").disabled = false;
     }
   });
+
+  // ─── check-in tab: scan the seat QR inside the app ─────────────────────────
+
+  function openCheckinTab() {
+    const c = state.checkin;
+    $("ciHours").textContent = c ? t("checkin_hours", c.open + "–" + c.close) : "";
+    $("ciClosed").hidden = !c || c.open_now;
+    $("scanErr").hidden = true;
+    const cv = state.me && state.me.member && state.me.member.current_visit;
+    $("ciToday").hidden = !cv;
+    if (cv) {
+      $("ciToday").textContent = t("checked_in_today", [
+        time(cv.checked_in_at),
+        cv.table_no ? seatLabel(cv.table_no) : null,
+        cv.party_size ? t("party_n", cv.party_size) : null,
+      ].filter(Boolean).join(" · "));
+    }
+  }
+
+  /** store + seat from a scanned seat QR (the URL printed on the admin's Seat QR page). */
+  function parseSeatQr(text) {
+    let url;
+    try {
+      url = new URL(String(text || "").trim());
+    } catch (e) {
+      return null;
+    }
+    let params = url.searchParams;
+    // liff.line.me links carry the query inside liff.state.
+    const inner = params.get("liff.state");
+    if (inner) params = new URLSearchParams(inner.slice(inner.indexOf("?") + 1));
+    const store = (params.get("store") || "").trim();
+    const table = (params.get("table") || "").trim().slice(0, 16);
+    return store && table ? { store, table } : null;
+  }
+
+  function scanErr(msg) {
+    $("scanErr").textContent = msg;
+    $("scanErr").hidden = false;
+  }
+
+  async function scanSeat() {
+    $("scanErr").hidden = true;
+    let available = false;
+    try {
+      available = typeof liff !== "undefined" && liff.isApiAvailable("scanCodeV2");
+    } catch (e) { /* not initialised (dev) */ }
+    if (!available) return scanErr(t("scan_unavailable"));
+
+    let value;
+    try {
+      value = (await liff.scanCodeV2()).value;
+    } catch (err) {
+      return scanErr(t("scan_failed", err.message || String(err)));
+    }
+    if (!value) return; // closed the scanner
+    const seat = parseSeatQr(value);
+    if (!seat) return scanErr(t("scan_not_seat"));
+
+    if (seat.store !== state.slug) {
+      // Another Cozene store: reopen the app on that store, straight into check-in.
+      const url = new URL(location.href);
+      url.searchParams.set("store", seat.store);
+      url.searchParams.set("table", seat.table);
+      url.hash = "checkin";
+      location.href = url.toString();
+      return;
+    }
+    state.table = seat.table;
+    const url = new URL(location.href);
+    url.searchParams.set("table", seat.table);
+    history.replaceState(null, "", url);
+    startCheckin();
+  }
+
+  $("scanBtn").addEventListener("click", scanSeat);
 
   // ─── benefit pass + staff PIN ─────────────────────────────────────────────
 
@@ -1004,9 +1108,10 @@
     $("boot").hidden = true;
     $("app").hidden = false;
     $("tabs").hidden = false;
+    $("langBtn").hidden = false;
 
     if (state.table) {
-      $("tableCta").textContent = t("checkin_cta", state.table);
+      $("tableCta").textContent = t("checkin_cta", seatLabel(state.table));
       $("tableCta").hidden = false;
       $("tableCta").onclick = startCheckin;
     }
@@ -1029,7 +1134,7 @@
     );
     showTab();
     // Arriving from a table QR: go straight into check-in.
-    if (state.table && currentTab() === "home") startCheckin();
+    if (state.table && (currentTab() === "home" || currentTab() === "checkin")) startCheckin();
   }
 
   main();

@@ -1,4 +1,5 @@
 import { getStoreProfile } from "@/lib/miniapp";
+import { seatLabel } from "@/lib/seat-label";
 import { adminStoreId, hasStaffPin, listRedemptions } from "@/lib/store-admin";
 import { datetime } from "@/lib/format";
 import { translateConfigured } from "@/lib/translate";
@@ -45,7 +46,7 @@ export default async function StorePage() {
       <h2>{tr("グラスワイン1杯サービスの利用履歴", "Free-glass redemptions")}</h2>
       <div className="card table-card">
         <table>
-          <thead><tr><th>{tr("日時", "When")}</th><th>{tr("ゲスト", "Guest")}</th><th>{tr("特典", "Benefit")}</th><th>{tr("テーブル", "Table")}</th><th className="num">{tr("人数", "Party")}</th></tr></thead>
+          <thead><tr><th>{tr("日時", "When")}</th><th>{tr("ゲスト", "Guest")}</th><th>{tr("特典", "Benefit")}</th><th>{tr("お席", "Seat")}</th><th className="num">{tr("人数", "Party")}</th></tr></thead>
           <tbody>
             {redemptions.length === 0 && (
               <tr><td colSpan={5}><div className="empty"><div className="t">{tr("まだありません", "None yet")}</div><div>{tr("スタッフがお客様のパスを確認すると、ここに表示されます。", "Redemptions appear here when staff confirm a guest's pass.")}</div></div></td></tr>
@@ -55,7 +56,7 @@ export default async function StorePage() {
                 <td className="muted">{datetime(r.redeemed_at)}</td>
                 <td className="cell-strong">{r.user_id ? <a href={`/customers/${r.user_id}`}>{r.display_name || tr("ゲスト", "Guest")}</a> : r.display_name || tr("ゲスト", "Guest")}</td>
                 <td>{r.benefit_title}</td>
-                <td>{r.table_no ?? "—"}</td>
+                <td>{r.table_no ? seatLabel(r.table_no, tr) : "—"}</td>
                 <td className="num">{r.party_size ?? "—"}</td>
               </tr>
             ))}

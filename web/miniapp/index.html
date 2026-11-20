@@ -87,6 +87,22 @@
     </section>
 
     <!-- Member card (login + consent) -->
+    <!-- Check-in: scan the seat QR inside the app -->
+    <section id="view-checkin" class="view" hidden>
+      <div class="pad">
+        <div id="ciToday" class="notice ci-today" hidden></div>
+        <div class="scan-card">
+          <svg class="scan-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 8h3v3H8zM13 13h3v3h-3zM13 8h3M8 16h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h2 data-i18n="scan_title">お席のQRコードを読み取る</h2>
+          <p class="scan-lead" data-i18n="scan_lead"></p>
+          <button id="scanBtn" class="btn-primary" type="button" data-i18n="scan_qr">QRコードを読み取る</button>
+          <p id="scanErr" class="err" hidden></p>
+          <p id="ciClosed" class="err" hidden data-i18n="checkin_closed_now"></p>
+          <p id="ciHours" class="fineprint"></p>
+        </div>
+      </div>
+    </section>
+
     <section id="view-member" class="view" hidden>
       <div class="pad">
         <div id="memberState" class="state" data-i18n="loading">読み込み中…</div>
@@ -129,9 +145,10 @@
     <a href="#home" data-tab="home" data-i18n="tab_home">ホーム</a>
     <a href="#menu" data-tab="menu" data-i18n="tab_menu">メニュー</a>
     <a href="#reserve" data-tab="reserve" data-i18n="tab_reserve">予約</a>
+    <a href="#checkin" data-tab="checkin" data-i18n="tab_checkin">チェックイン</a>
     <a href="#member" data-tab="member" data-i18n="tab_member">会員証</a>
-    <button id="langBtn" class="lang-btn" type="button" aria-label="Language">EN</button>
   </nav>
+  <button id="langBtn" class="lang-btn" type="button" aria-label="Language" hidden>EN</button>
 
   <!-- Consent sheet -->
   <div id="consentSheet" class="sheet" hidden>

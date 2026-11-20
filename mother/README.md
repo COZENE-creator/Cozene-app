@@ -65,7 +65,7 @@ Point the LIFF client at this app: in `../web/config.js` set
 | `APP_BASE_URL` | public origin for links in staff LINE messages, e.g. `https://app.cozene.jp` (falls back to the request host) |
 | `DEFAULT_STORE_SLUG` | store used for single-store webhook/push resolution, and the store the admin console edits |
 | `LINE_LOGIN_CHANNEL_IDS` | Mini App: channel ids allowed as ID-token `aud` (comma-separated) |
-| `MINIAPP_LIFF_ID` | Mini App LIFF id, prefills the Table QR page and the Mini App link in guest reservation messages |
+| `MINIAPP_LIFF_ID` | Mini App LIFF id, prefills the Seat QR page and the Mini App link in guest reservation messages |
 | `CONSENT_POLICY_VERSION` | bump when the consent wording changes → guests re-consent |
 | `LINE_ID_TOKEN_DEV` | `1` = accept `dev:<userId>` tokens for local testing. **Never in production.** |
 
@@ -113,11 +113,13 @@ before running more than one instance). Push campaigns skip guests who declined 
 
 **LINE setup (one-time).**
 1. In the Cozene provider (the one that owns the Messaging API channel), create a **LINE MINI
-   App** channel. Endpoint URL = `<pages-url>/miniapp/`. Scopes: `openid`, `profile`.
+   App** channel. Endpoint URL = `<pages-url>/miniapp/`. Scopes: `openid`, `profile`. Turn on
+   **Scan QR** (Web app settings) so the チェックイン tab can open the camera (`liff.scanCodeV2`).
 2. Put its channel id in `LINE_LOGIN_CHANNEL_IDS` and its LIFF id in `MINIAPP_LIFF_ID` (here) and
    in the `MINIAPP_LIFF_ID` repo variable (GitHub Pages build).
 3. Mother → **Store**: fill the profile, set the **staff PIN**. → **Menu**: replace the
-   placeholder items. → **Table QR**: print.
+   placeholder items. → **Seat QR**: enter the counter seats and tables, save, print one QR per
+   seat. Guests scan it with the LINE camera or from the Mini App's チェックイン tab.
 4. Unverified Mini Apps can be used by guests right away; apply for LINE verification when ready
    (review takes weeks — start early).
 

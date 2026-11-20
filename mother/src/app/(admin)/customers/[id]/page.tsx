@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { seatLabel } from "@/lib/seat-label";
 import { notFound } from "next/navigation";
 import { getCustomer, getCustomerTimeline, getUserTagIds, listTags, getCustomerMiniApp } from "@/lib/queries";
 import { money, datetime } from "@/lib/format";
@@ -121,7 +122,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                 <td>
                   {[
                     e.detail,
-                    e.table_no ? tr(`テーブル ${e.table_no}`, `Table ${e.table_no}`) : null,
+                    e.table_no ? seatLabel(e.table_no, tr) : null,
                     e.party_size ? tr(`${e.party_size}名`, `${e.party_size} ${e.party_size === 1 ? "guest" : "guests"}`) : null,
                   ].filter(Boolean).join(" · ")}
                 </td>

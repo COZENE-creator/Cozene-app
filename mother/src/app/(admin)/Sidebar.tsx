@@ -19,7 +19,7 @@ const MINIAPP_NAV = [
   { href: "/menu", ja: "メニュー", en: "Menu", Icon: IconMenu },
   { href: "/recommendations", ja: "本日のおすすめ", en: "Today's picks", Icon: IconSparkle },
   { href: "/reservations", ja: "予約", en: "Reservations", Icon: IconCalendar },
-  { href: "/qr", ja: "テーブルQR", en: "Table QR", Icon: IconQr },
+  { href: "/qr", ja: "お席のQR", en: "Seat QR", Icon: IconQr },
 ];
 
 export default function Sidebar({ admin, pendingReservations }: { admin: string; pendingReservations: number }) {

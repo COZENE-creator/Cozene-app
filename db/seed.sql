@@ -176,3 +176,8 @@ UPDATE benefits b
   FROM stores s
  WHERE s.slug = 'cozene-base' AND b.store_id = s.id AND b.key = 'first_visit_glass'
    AND b.translations = '{}'::jsonb;
+
+-- Seats: 11 counter seats and 4 tables (admin → Table QR). Only fills an
+-- unset layout, so the owner's own changes are kept.
+UPDATE stores SET seat_layout = '{"counter": 11, "tables": 4, "other": []}'::jsonb
+ WHERE slug = 'cozene-base' AND seat_layout = '{}'::jsonb;

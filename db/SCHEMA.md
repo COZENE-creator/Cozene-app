@@ -401,6 +401,11 @@ few △ / full ×) is the calendar staff set by hand; no row = open (closed week
 every step — guest `requested` / `cancelled` / `accepted`, staff `confirmed` / `proposed` /
 `declined` with `staff_name`, `message` and the LINE delivery result.
 
+**Seat layout (`0008_seat_layout.sql`).** `stores.seat_layout` = `{counter, tables, other}`; each
+seat gets its own QR with `?table=` C1…Cn (counter seats), T1…Tn (tables) or the name in `other`.
+`visits.table_no` keeps that code; the Mini App and admin show it as カウンター 3 / テーブル 2. Bare
+numbers from older QRs still work and show as テーブル n.
+
 **Rewards text and add-friend link (`0006_rewards_friend.sql`).** `stores.rewards_text`: free text
 describing member rewards (e.g. visit 1 → a glass of wine, visit 3 → a special glass), shown on the
 Mini App home and member card. `stores.line_friend_url`: the Official Account's add-friend link,
